@@ -1,1 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  >
+
+  <title>VIN Scanner</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 18px;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .start {
+      background: #15803d;
+      color: white;
+    }
+
+    .stop {
+      background: #6b7280;
+      color: white;
+    }
+
+    #scanner {
+      position: relative;
+      width: 100%;
+      height: 320px;
+      margin-top: 18px;
+      background: #111;
+      overflow: hidden;
+      border-radius: 12px;
+      display: none;
+    }
+
+    #scanner video,
+    #scanner canvas {
+      position: absolute;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+      left: 0;
+      top: 0;
+    }
+
+    .scan-guide {
+      position: absolute;
+      z-index: 20;
+      left: 5%;
+      right: 5%;
+      top: 38%;
+      height: 80px;
+      border: 3px solid #22c55e;
+      border-radius: 7px;
+      pointer-events: none;
+    }
+
+    .scan-line {
+      position: absolute;
+      z-index: 21;
+      left: 7%;
+      right: 7%;
+      top: 50%;
+      height: 2px;
+      background: #ef4444;
+      pointer-events: none;
+    }
+
+    #status {
+      margin-top: 18px;
+      text-align: center;
+      font-weight: bold;
+      min-height: 24px;
+    }
+
+    .result {
+      margin-top: 18px;
+      padding: 18px;
+      background: #ecfdf5;
+      border: 2px solid #16a34a;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .result-label {
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    #vinResult {
+      font-size: 21px;
+      font-weight: bold;
+      margin-top: 5px;
+      overflow-wrap: anywhere;
+    }
+
+    #formatResult {
+      margin-top: 8px;
+      color: #64748b;
+    }
+
+    .instructions {
+      margin-top: 15px;
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+  </style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+  <div class="card">
+
+    <h1>VIN Scanner</h1>
+
+    <div class="subtitle">
+      U-Save Oil Change System
+    </div>
+
+
+    <button
+      class="start"
+      onclick="startScanner()"
+    >
+      START VIN SCANNER
+    </button>
+
+
+    <div id="scanner">
+
+      <div class="scan-guide"></div>
+
+      <div class="scan-line"></div>
+
+    </div>
+
+
+    <button
+      id="stopButton"
+      class="stop"
+      onclick="stopScanner()"
+      style="display:none;"
+    >
+      STOP CAMERA
+    </button>
+
+
+    <div id="status">
+      Camera not started
+    </div>
+
+
+    <div
+      id="resultBox"
+      class="result"
+    >
+
+      <div class="result-label">
+        VIN FOUND
+      </div>
+
+      <div id="vinResult"></div>
+
+      <div id="formatResult"></div>
+
+    </div>
+
+
+    <div class="instructions">
+
+      Hold the phone horizontally if needed.
+
+      <br><br>
+
+      Place the entire VIN barcode inside the green box.
+
+      <br><br>
+
+      Try approximately 6–12 inches away and move slowly until the barcode is sharp.
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
+
+
+<script>
+
+let scannerStarted = false;
+
+let lastCandidate = "";
+
+let candidateCount = 0;
+
+
+
+function startScanner() {
+
+  if (scannerStarted) {
+    return;
+  }
+
+
+  document.getElementById(
+    "resultBox"
+  ).style.display = "none";
+
+
+  document.getElementById(
+    "scanner"
+  ).style.display = "block";
+
+
+  document.getElementById(
+    "stopButton"
+  ).style.display = "block";
+
+
+  setStatus(
+    "Requesting camera..."
+  );
+
+
+  Quagga.init({
+
+    inputStream: {
+
+      name: "Live",
+
+      type: "LiveStream",
+
+      target:
+        document.querySelector(
+          "#scanner"
+        ),
+
+      constraints: {
+
+        facingMode: {
+          ideal: "environment"
+        },
+
+        width: {
+          ideal: 1920
+        },
+
+        height: {
+          ideal: 1080
+        }
+
+      },
+
+      area: {
+
+        top: "25%",
+
+        right: "5%",
+
+        left: "5%",
+
+        bottom: "25%"
+
+      }
+
+    },
+
+
+    locator: {
+
+      patchSize: "medium",
+
+      halfSample: true
+
+    },
+
+
+    numOfWorkers:
+      navigator.hardwareConcurrency
+        ? Math.min(
+            navigator.hardwareConcurrency,
+            4
+          )
+        : 2,
+
+
+    frequency: 10,
+
+
+    decoder: {
+
+      readers: [
+
+        "code_128_reader",
+
+        "code_39_reader",
+
+        "code_93_reader",
+
+        "codabar_reader"
+
+      ]
+
+    },
+
+
+    locate: true
+
+
+  },
+
+  function(error) {
+
+    if (error) {
+
+      console.error(error);
+
+      setStatus(
+        "CAMERA ERROR: " +
+        (
+          error.message ||
+          error.name ||
+          error
+        )
+      );
+
+      document.getElementById(
+        "scanner"
+      ).style.display = "none";
+
+      document.getElementById(
+        "stopButton"
+      ).style.display = "none";
+
+      return;
+
+    }
+
+
+    scannerStarted = true;
+
+    Quagga.start();
+
+
+    setStatus(
+      "Camera running — point at VIN barcode"
+    );
+
+  });
+
+}
+
+
+
+/*
+ * Quagga reports candidate barcodes here.
+ *
+ * We require the same VIN twice before
+ * accepting it. This reduces false scans.
+ */
+
+Quagga.onDetected(
+  function(result) {
+
+    if (
+      !result ||
+      !result.codeResult ||
+      !result.codeResult.code
+    ) {
+      return;
+    }
+
+
+    let raw =
+      String(
+        result.codeResult.code
+      )
+      .toUpperCase()
+      .trim();
+
+
+    console.log(
+      "Candidate:",
+      raw,
+      result.codeResult.format
+    );
+
+
+    /*
+     * VINs:
+     *
+     * - exactly 17 characters
+     * - letters/numbers
+     * - never contain I, O or Q
+     */
+
+    const matches =
+      raw.match(
+        /[A-HJ-NPR-Z0-9]{17}/g
+      );
+
+
+    if (
+      !matches ||
+      matches.length === 0
+    ) {
+
+      setStatus(
+        "Barcode detected — looking for 17-character VIN..."
+      );
+
+      return;
+
+    }
+
+
+    const vin =
+      matches[0];
+
+
+    /*
+     * Require repeated detection.
+     */
+
+    if (
+      vin === lastCandidate
+    ) {
+
+      candidateCount++;
+
+    }
+
+    else {
+
+      lastCandidate = vin;
+
+      candidateCount = 1;
+
+    }
+
+
+    setStatus(
+      "Reading VIN... " +
+      candidateCount +
+      "/2"
+    );
+
+
+    if (
+      candidateCount >= 2
+    ) {
+
+      acceptVIN(
+        vin,
+        result.codeResult.format
+      );
+
+    }
+
+  }
+);
+
+
+
+function acceptVIN(
+  vin,
+  format
+) {
+
+  document.getElementById(
+    "vinResult"
+  ).textContent = vin;
+
+
+  document.getElementById(
+    "formatResult"
+  ).textContent =
+    "Barcode format: " +
+    format;
+
+
+  document.getElementById(
+    "resultBox"
+  ).style.display = "block";
+
+
+  setStatus(
+    "VIN successfully scanned"
+  );
+
+
+  /*
+   * Vibrate phone if supported.
+   */
+
+  if (
+    navigator.vibrate
+  ) {
+
+    navigator.vibrate(
+      [100, 50, 100]
+    );
+
+  }
+
+
+  stopScanner(
+    false
+  );
+
+}
+
+
+
+function stopScanner(
+  changeStatus = true
+) {
+
+  if (
+    scannerStarted
+  ) {
+
+    try {
+
+      Quagga.stop();
+
+    }
+
+    catch (error) {
+
+      console.log(error);
+
+    }
+
+  }
+
+
+  scannerStarted = false;
+
+  lastCandidate = "";
+
+  candidateCount = 0;
+
+
+  document.getElementById(
+    "scanner"
+  ).style.display = "none";
+
+
+  document.getElementById(
+    "stopButton"
+  ).style.display = "none";
+
+
+  if (
+    changeStatus
+  ) {
+
+    setStatus(
+      "Camera stopped"
+    );
+
+  }
+
+}
+
+
+
+function setStatus(
+  message
+) {
+
+  document.getElementById(
+    "status"
+  ).textContent =
+    message;
+
+}
+
+</script>
+
+</body>
+
+</html>
