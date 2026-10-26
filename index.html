@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
   >
 
-  <title>VIN Scanner</title>
+  <title>U-Save Oil Change</title>
 
   <style>
     * {
@@ -18,7 +18,7 @@
 
     body {
       margin: 0;
-      padding: 18px;
+      padding: 16px;
       font-family: Arial, sans-serif;
       background: #f4f6f8;
       color: #1f2937;
@@ -38,14 +38,33 @@
 
     h1 {
       text-align: center;
-      margin-top: 0;
-      margin-bottom: 5px;
+      margin: 0 0 4px;
     }
 
     .subtitle {
       text-align: center;
       color: #64748b;
       margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 6px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 9px;
+      font-size: 17px;
+    }
+
+    input[readonly] {
+      background: #f8fafc;
     }
 
     button {
@@ -56,6 +75,7 @@
       border-radius: 10px;
       font-size: 17px;
       font-weight: bold;
+      cursor: pointer;
     }
 
     .start {
@@ -66,6 +86,22 @@
     .stop {
       background: #6b7280;
       color: white;
+    }
+
+    .manual {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    .complete {
+      background: #166534;
+      color: white;
+      margin-top: 22px;
+      font-size: 19px;
+    }
+
+    .complete:disabled {
+      opacity: .45;
     }
 
     #scanner {
@@ -113,47 +149,61 @@
     }
 
     #status {
-      margin-top: 18px;
+      margin-top: 16px;
       text-align: center;
       font-weight: bold;
-      min-height: 24px;
+      min-height: 22px;
     }
 
-    .result {
+    .vehicle-box {
+      display: none;
       margin-top: 18px;
-      padding: 18px;
+      padding: 16px;
+      border-radius: 10px;
       background: #ecfdf5;
       border: 2px solid #16a34a;
-      border-radius: 10px;
-      display: none;
     }
 
-    .result-label {
+    .vehicle-name {
+      font-size: 21px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .vin-display {
+      color: #475569;
+      overflow-wrap: anywhere;
+    }
+
+    .price-box {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 10px;
+      background: #f8fafc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .price {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .small {
       color: #64748b;
       font-size: 13px;
     }
 
-    #vinResult {
-      font-size: 21px;
-      font-weight: bold;
-      margin-top: 5px;
-      overflow-wrap: anywhere;
+    .error {
+      color: #b91c1c;
     }
 
-    #formatResult {
-      margin-top: 8px;
-      color: #64748b;
-    }
-
-    .instructions {
-      margin-top: 15px;
-      color: #64748b;
-      font-size: 14px;
-      line-height: 1.45;
+    .success {
+      color: #15803d;
     }
   </style>
 </head>
-
 
 <body>
 
@@ -161,18 +211,20 @@
 
   <div class="card">
 
-    <h1>VIN Scanner</h1>
+    <h1>Oil Change</h1>
 
     <div class="subtitle">
-      U-Save Oil Change System
+      U-Save Service
     </div>
 
 
     <button
+      id="startButton"
       class="start"
+      type="button"
       onclick="startScanner()"
     >
-      START VIN SCANNER
+      SCAN VIN
     </button>
 
 
@@ -188,6 +240,7 @@
     <button
       id="stopButton"
       class="stop"
+      type="button"
       onclick="stopScanner()"
       style="display:none;"
     >
@@ -196,43 +249,112 @@
 
 
     <div id="status">
-      Camera not started
+      Ready to scan
     </div>
+
+
+    <label for="vin">
+      VIN
+    </label>
+
+    <input
+      id="vin"
+      maxlength="17"
+      autocomplete="off"
+      autocapitalize="characters"
+      placeholder="Scan or enter VIN"
+      oninput="vinChanged()"
+    >
+
+
+    <button
+      class="manual"
+      type="button"
+      onclick="decodeVINFromInput()"
+    >
+      DECODE VIN
+    </button>
 
 
     <div
-      id="resultBox"
-      class="result"
+      id="vehicleBox"
+      class="vehicle-box"
     >
 
-      <div class="result-label">
-        VIN FOUND
+      <div
+        id="vehicleName"
+        class="vehicle-name"
+      ></div>
+
+      <div
+        id="vinDisplay"
+        class="vin-display"
+      ></div>
+
+    </div>
+
+
+    <label for="mileage">
+      Mileage
+    </label>
+
+    <input
+      id="mileage"
+      type="number"
+      inputmode="numeric"
+      min="1"
+      step="1"
+      placeholder="Enter current mileage"
+      oninput="updateCompleteButton()"
+    >
+
+
+    <div class="price-box">
+
+      <div>
+        <strong>Oil & Filter Change</strong>
+        <div class="small">
+          Contract service price
+        </div>
       </div>
 
-      <div id="vinResult"></div>
-
-      <div id="formatResult"></div>
-
-    </div>
-
-
-    <div class="instructions">
-
-      Hold the phone horizontally if needed.
-
-      <br><br>
-
-      Place the entire VIN barcode inside the green box.
-
-      <br><br>
-
-      Try approximately 6–12 inches away and move slowly until the barcode is sharp.
+      <div class="price">
+        $65.00
+      </div>
 
     </div>
+
+
+    <button
+      id="completeButton"
+      class="complete"
+      type="button"
+      onclick="completeService()"
+      disabled
+    >
+      COMPLETE OIL CHANGE
+    </button>
 
   </div>
 
 </div>
+
+
+<!-- Hidden form used to send data to Apps Script -->
+<form
+  id="serviceForm"
+  method="POST"
+  action="https://script.google.com/macros/s/AKfycbxe8iGhBAEjjLeyWEj_ws2-oEAlol9qmylOaL_WbLFRC3lr1iNsNiQ21JOPzM90106y/exec"
+  style="display:none;"
+>
+
+  <input
+    type="hidden"
+    name="payload"
+    id="payload"
+  >
+
+</form>
 
 
 <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
@@ -246,18 +368,18 @@ let lastCandidate = "";
 
 let candidateCount = 0;
 
+let vehicleData = null;
 
 
+
+/*
+ * START CAMERA
+ */
 function startScanner() {
 
   if (scannerStarted) {
     return;
   }
-
-
-  document.getElementById(
-    "resultBox"
-  ).style.display = "none";
 
 
   document.getElementById(
@@ -271,7 +393,7 @@ function startScanner() {
 
 
   setStatus(
-    "Requesting camera..."
+    "Starting camera..."
   );
 
 
@@ -369,21 +491,14 @@ function startScanner() {
       console.error(error);
 
       setStatus(
-        "CAMERA ERROR: " +
+        "Camera error: " +
         (
           error.message ||
           error.name ||
           error
-        )
+        ),
+        true
       );
-
-      document.getElementById(
-        "scanner"
-      ).style.display = "none";
-
-      document.getElementById(
-        "stopButton"
-      ).style.display = "none";
 
       return;
 
@@ -396,7 +511,7 @@ function startScanner() {
 
 
     setStatus(
-      "Camera running — point at VIN barcode"
+      "Point camera at VIN barcode"
     );
 
   });
@@ -406,12 +521,8 @@ function startScanner() {
 
 
 /*
- * Quagga reports candidate barcodes here.
- *
- * We require the same VIN twice before
- * accepting it. This reduces false scans.
+ * BARCODE DETECTION
  */
-
 Quagga.onDetected(
   function(result) {
 
@@ -432,21 +543,6 @@ Quagga.onDetected(
       .trim();
 
 
-    console.log(
-      "Candidate:",
-      raw,
-      result.codeResult.format
-    );
-
-
-    /*
-     * VINs:
-     *
-     * - exactly 17 characters
-     * - letters/numbers
-     * - never contain I, O or Q
-     */
-
     const matches =
       raw.match(
         /[A-HJ-NPR-Z0-9]{17}/g
@@ -457,23 +553,13 @@ Quagga.onDetected(
       !matches ||
       matches.length === 0
     ) {
-
-      setStatus(
-        "Barcode detected — looking for 17-character VIN..."
-      );
-
       return;
-
     }
 
 
     const vin =
       matches[0];
 
-
-    /*
-     * Require repeated detection.
-     */
 
     if (
       vin === lastCandidate
@@ -503,10 +589,15 @@ Quagga.onDetected(
       candidateCount >= 2
     ) {
 
-      acceptVIN(
-        vin,
-        result.codeResult.format
-      );
+      document.getElementById(
+        "vin"
+      ).value = vin;
+
+
+      stopScanner(false);
+
+
+      decodeVIN(vin);
 
     }
 
@@ -515,74 +606,21 @@ Quagga.onDetected(
 
 
 
-function acceptVIN(
-  vin,
-  format
-) {
-
-  document.getElementById(
-    "vinResult"
-  ).textContent = vin;
-
-
-  document.getElementById(
-    "formatResult"
-  ).textContent =
-    "Barcode format: " +
-    format;
-
-
-  document.getElementById(
-    "resultBox"
-  ).style.display = "block";
-
-
-  setStatus(
-    "VIN successfully scanned"
-  );
-
-
-  /*
-   * Vibrate phone if supported.
-   */
-
-  if (
-    navigator.vibrate
-  ) {
-
-    navigator.vibrate(
-      [100, 50, 100]
-    );
-
-  }
-
-
-  stopScanner(
-    false
-  );
-
-}
-
-
-
+/*
+ * STOP CAMERA
+ */
 function stopScanner(
   changeStatus = true
 ) {
 
-  if (
-    scannerStarted
-  ) {
+  if (scannerStarted) {
 
     try {
-
       Quagga.stop();
-
     }
 
     catch (error) {
-
       console.log(error);
-
     }
 
   }
@@ -605,9 +643,7 @@ function stopScanner(
   ).style.display = "none";
 
 
-  if (
-    changeStatus
-  ) {
+  if (changeStatus) {
 
     setStatus(
       "Camera stopped"
@@ -619,14 +655,378 @@ function stopScanner(
 
 
 
-function setStatus(
-  message
-) {
+/*
+ * MANUAL VIN ENTRY
+ */
+function vinChanged() {
+
+  const input =
+    document.getElementById(
+      "vin"
+    );
+
+
+  input.value =
+    input.value
+      .toUpperCase()
+      .replace(
+        /[^A-HJ-NPR-Z0-9]/g,
+        ""
+      )
+      .slice(
+        0,
+        17
+      );
+
+
+  vehicleData = null;
+
 
   document.getElementById(
-    "status"
-  ).textContent =
+    "vehicleBox"
+  ).style.display = "none";
+
+
+  updateCompleteButton();
+
+}
+
+
+
+function decodeVINFromInput() {
+
+  const vin =
+    document.getElementById(
+      "vin"
+    ).value
+      .trim()
+      .toUpperCase();
+
+
+  decodeVIN(vin);
+
+}
+
+
+
+/*
+ * NHTSA VIN DECODER
+ */
+async function decodeVIN(vin) {
+
+  if (
+    !/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)
+  ) {
+
+    setStatus(
+      "VIN must contain exactly 17 valid characters.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  setStatus(
+    "Decoding VIN..."
+  );
+
+
+  try {
+
+    const url =
+      "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/" +
+      encodeURIComponent(vin) +
+      "?format=json";
+
+
+    const response =
+      await fetch(url);
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "VIN decoder unavailable"
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      !data.Results ||
+      !data.Results.length
+    ) {
+
+      throw new Error(
+        "No vehicle information returned"
+      );
+
+    }
+
+
+    const result =
+      data.Results[0];
+
+
+    if (
+      !result.ModelYear ||
+      !result.Make ||
+      !result.Model
+    ) {
+
+      throw new Error(
+        "Vehicle could not be identified"
+      );
+
+    }
+
+
+    vehicleData = {
+
+      vin: vin,
+
+      year:
+        result.ModelYear,
+
+      make:
+        result.Make,
+
+      model:
+        result.Model
+
+    };
+
+
+    document.getElementById(
+      "vehicleName"
+    ).textContent =
+      vehicleData.year +
+      " " +
+      vehicleData.make +
+      " " +
+      vehicleData.model;
+
+
+    document.getElementById(
+      "vinDisplay"
+    ).textContent =
+      vehicleData.vin;
+
+
+    document.getElementById(
+      "vehicleBox"
+    ).style.display =
+      "block";
+
+
+    setStatus(
+      "Vehicle identified",
+      false,
+      true
+    );
+
+
+    if (
+      navigator.vibrate
+    ) {
+
+      navigator.vibrate(
+        [100, 50, 100]
+      );
+
+    }
+
+
+    document.getElementById(
+      "mileage"
+    ).focus();
+
+
+    updateCompleteButton();
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    vehicleData = null;
+
+
+    setStatus(
+      "VIN decode failed: " +
+      error.message,
+      true
+    );
+
+
+    updateCompleteButton();
+
+  }
+
+}
+
+
+
+/*
+ * ENABLE COMPLETE BUTTON
+ */
+function updateCompleteButton() {
+
+  const mileage =
+    Number(
+      document.getElementById(
+        "mileage"
+      ).value
+    );
+
+
+  document.getElementById(
+    "completeButton"
+  ).disabled =
+    !vehicleData ||
+    !Number.isFinite(mileage) ||
+    mileage <= 0;
+
+}
+
+
+
+/*
+ * COMPLETE SERVICE
+ */
+function completeService() {
+
+  if (!vehicleData) {
+
+    setStatus(
+      "Scan or decode a VIN first.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  const mileage =
+    Number(
+      document.getElementById(
+        "mileage"
+      ).value
+    );
+
+
+  if (
+    !Number.isFinite(mileage) ||
+    mileage <= 0
+  ) {
+
+    setStatus(
+      "Enter a valid mileage.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  const button =
+    document.getElementById(
+      "completeButton"
+    );
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "SAVING...";
+
+
+  const payload = {
+
+    vin:
+      vehicleData.vin,
+
+    year:
+      vehicleData.year,
+
+    make:
+      vehicleData.make,
+
+    model:
+      vehicleData.model,
+
+    mileage:
+      mileage
+
+  };
+
+
+  /*
+   * Apps Script expects JSON.
+   *
+   * We put JSON into the hidden form.
+   */
+  document.getElementById(
+    "payload"
+  ).value =
+    JSON.stringify(payload);
+
+
+  document.getElementById(
+    "serviceForm"
+  ).submit();
+
+}
+
+
+
+/*
+ * STATUS MESSAGE
+ */
+function setStatus(
+  message,
+  isError = false,
+  isSuccess = false
+) {
+
+  const status =
+    document.getElementById(
+      "status"
+    );
+
+
+  status.textContent =
     message;
+
+
+  status.className = "";
+
+
+  if (isError) {
+
+    status.classList.add(
+      "error"
+    );
+
+  }
+
+
+  if (isSuccess) {
+
+    status.classList.add(
+      "success"
+    );
+
+  }
 
 }
 
