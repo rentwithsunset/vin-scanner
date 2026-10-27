@@ -315,7 +315,199 @@
       SCAN VIN
     </button>
 
+    <button
+  class="manual"
+  type="button"
+  onclick="openVehicleLookup()"
+>
+  VEHICLE LOOKUP
+</button>
 
+<!-- VEHICLE LOOKUP -->
+
+<div
+  id="vehicleLookupBox"
+  style="
+    display:none;
+    margin-top:18px;
+    padding:18px;
+    background:#f8fafc;
+    border:1px solid #cbd5e1;
+    border-radius:12px;
+  "
+>
+
+  <div
+    style="
+      font-size:19px;
+      font-weight:bold;
+      margin-bottom:4px;
+    "
+  >
+    Vehicle Lookup
+  </div>
+
+  <div class="small">
+    Search by license plate or VIN
+  </div>
+
+
+  <input
+    id="vehicleSearch"
+    type="text"
+    maxlength="17"
+    autocomplete="off"
+    autocapitalize="characters"
+    placeholder="Plate or VIN"
+    style="margin-top:14px;"
+    oninput="vehicleSearchChanged()"
+    onkeydown="vehicleSearchKeyDown(event)"
+  >
+
+
+  <button
+    class="start"
+    type="button"
+    onclick="searchVehicleDatabase()"
+  >
+    SEARCH
+  </button>
+
+
+  <button
+    class="manual"
+    type="button"
+    onclick="closeVehicleLookup()"
+  >
+    CANCEL
+  </button>
+
+
+  <div
+    id="vehicleSearchStatus"
+    style="
+      margin-top:14px;
+      text-align:center;
+      font-weight:bold;
+      min-height:20px;
+    "
+  ></div>
+
+
+  <div
+    id="vehicleSearchResult"
+    style="
+      display:none;
+      margin-top:15px;
+      padding:16px;
+      background:white;
+      border:2px solid #2563eb;
+      border-radius:10px;
+    "
+  >
+
+    <div
+      id="searchVehicleName"
+      style="
+        font-size:20px;
+        font-weight:bold;
+      "
+    ></div>
+
+
+    <div
+      id="searchVehicleDetails"
+      style="
+        margin-top:5px;
+        color:#475569;
+      "
+    ></div>
+
+
+    <div
+      style="
+        margin-top:13px;
+        display:grid;
+        gap:7px;
+      "
+    >
+
+      <div>
+        <span class="small">
+          Plate
+        </span>
+
+        <div
+          id="searchPlate"
+          style="font-weight:bold;"
+        ></div>
+      </div>
+
+
+      <div>
+        <span class="small">
+          VIN
+        </span>
+
+        <div
+          id="searchVin"
+          style="
+            font-size:13px;
+            overflow-wrap:anywhere;
+          "
+        ></div>
+      </div>
+
+
+      <div>
+        <span class="small">
+          Last Service
+        </span>
+
+        <div
+          id="searchLastService"
+          style="font-weight:bold;"
+        ></div>
+      </div>
+
+
+      <div>
+        <span class="small">
+          Last Mileage
+        </span>
+
+        <div
+          id="searchLastMileage"
+          style="font-weight:bold;"
+        ></div>
+      </div>
+
+
+      <div>
+        <span class="small">
+          Total Services
+        </span>
+
+        <div
+          id="searchServiceCount"
+          style="font-weight:bold;"
+        ></div>
+      </div>
+
+    </div>
+
+
+    <button
+      class="history-button"
+      type="button"
+      onclick="openSearchedVehicleHistory()"
+    >
+      VIEW FULL HISTORY
+    </button>
+
+  </div>
+
+</div>
     <div id="scanner">
 
       <div class="scan-guide"></div>
@@ -591,6 +783,8 @@ let existingVehicle = false;
 let editingPlate = false;
 
 let lookupRequestNumber = 0;
+
+let searchedVehicle = null;
 
 
 /*
@@ -2299,6 +2493,528 @@ function setStatus(
     );
 
   }
+
+}
+  /*
+ * ============================================================
+ * VEHICLE LOOKUP SCREEN
+ * ============================================================
+ */
+
+function openVehicleLookup() {
+
+  stopScanner(false);
+
+
+  document.getElementById(
+    "vehicleLookupBox"
+  ).style.display =
+    "block";
+
+
+  document.getElementById(
+    "vehicleSearch"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "vehicleSearchResult"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "vehicleSearchStatus"
+  ).textContent =
+    "";
+
+
+  searchedVehicle = null;
+
+
+  setTimeout(
+    function() {
+
+      document.getElementById(
+        "vehicleSearch"
+      ).focus();
+
+    },
+    100
+  );
+
+}
+
+
+function closeVehicleLookup() {
+
+  document.getElementById(
+    "vehicleLookupBox"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "vehicleSearchResult"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "vehicleSearchStatus"
+  ).textContent =
+    "";
+
+
+  searchedVehicle = null;
+
+}
+
+
+/*
+ * ============================================================
+ * SEARCH INPUT
+ * ============================================================
+ */
+
+function vehicleSearchChanged() {
+
+  const input =
+    document.getElementById(
+      "vehicleSearch"
+    );
+
+
+  input.value =
+    input.value
+      .toUpperCase()
+      .replace(
+        /[^A-Z0-9 -]/g,
+        ""
+      )
+      .slice(
+        0,
+        17
+      );
+
+
+  document.getElementById(
+    "vehicleSearchResult"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "vehicleSearchStatus"
+  ).textContent =
+    "";
+
+
+  searchedVehicle = null;
+
+}
+
+
+function vehicleSearchKeyDown(
+  event
+) {
+
+  if (
+    event.key === "Enter"
+  ) {
+
+    event.preventDefault();
+
+    searchVehicleDatabase();
+
+  }
+
+}
+
+
+/*
+ * ============================================================
+ * SEARCH DATABASE
+ * ============================================================
+ */
+
+function searchVehicleDatabase() {
+
+  const query =
+    document.getElementById(
+      "vehicleSearch"
+    ).value
+      .trim()
+      .toUpperCase();
+
+
+  if (!query) {
+
+    setVehicleSearchStatus(
+      "Enter a license plate or VIN.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  searchedVehicle = null;
+
+
+  document.getElementById(
+    "vehicleSearchResult"
+  ).style.display =
+    "none";
+
+
+  setVehicleSearchStatus(
+    "Searching..."
+  );
+
+
+  const callbackName =
+    "vehicleSearchCallback_" +
+    Date.now();
+
+
+  const script =
+    document.createElement(
+      "script"
+    );
+
+
+  let timeout;
+
+
+  window[callbackName] =
+    function(response) {
+
+      clearTimeout(
+        timeout
+      );
+
+
+      if (
+        script.parentNode
+      ) {
+
+        script.parentNode
+          .removeChild(
+            script
+          );
+
+      }
+
+
+      delete window[
+        callbackName
+      ];
+
+
+      if (
+        !response ||
+        response.success !== true
+      ) {
+
+        setVehicleSearchStatus(
+          response &&
+          response.error
+
+            ? response.error
+
+            : "Vehicle search failed.",
+
+          true
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !response.found ||
+        !response.vehicle
+      ) {
+
+        setVehicleSearchStatus(
+          "No vehicle found.",
+          true
+        );
+
+        return;
+
+      }
+
+
+      displayVehicleSearchResult(
+        response.vehicle
+      );
+
+    };
+
+
+  script.onerror =
+    function() {
+
+      clearTimeout(
+        timeout
+      );
+
+
+      if (
+        script.parentNode
+      ) {
+
+        script.parentNode
+          .removeChild(
+            script
+          );
+
+      }
+
+
+      delete window[
+        callbackName
+      ];
+
+
+      setVehicleSearchStatus(
+        "Could not reach vehicle database.",
+        true
+      );
+
+    };
+
+
+  timeout =
+    setTimeout(
+      function() {
+
+        if (
+          script.parentNode
+        ) {
+
+          script.parentNode
+            .removeChild(
+              script
+            );
+
+        }
+
+
+        delete window[
+          callbackName
+        ];
+
+
+        setVehicleSearchStatus(
+          "Vehicle search timed out.",
+          true
+        );
+
+      },
+      12000
+    );
+
+
+  script.src =
+    API_URL +
+    "?action=searchvehicle" +
+    "&query=" +
+    encodeURIComponent(
+      query
+    ) +
+    "&callback=" +
+    encodeURIComponent(
+      callbackName
+    );
+
+
+  document.body.appendChild(
+    script
+  );
+
+}
+
+
+/*
+ * ============================================================
+ * DISPLAY SEARCH RESULT
+ * ============================================================
+ */
+
+function displayVehicleSearchResult(
+  vehicle
+) {
+
+  searchedVehicle =
+    vehicle;
+
+
+  const vehicleName =
+    [
+      vehicle.year,
+      vehicle.make,
+      vehicle.model
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+
+  document.getElementById(
+    "searchVehicleName"
+  ).textContent =
+    vehicleName;
+
+
+  const details =
+    document.getElementById(
+      "searchVehicleDetails"
+    );
+
+
+  details.textContent =
+    vehicle.vehicleDetails ||
+    "";
+
+
+  details.style.display =
+    vehicle.vehicleDetails
+      ? "block"
+      : "none";
+
+
+  document.getElementById(
+    "searchPlate"
+  ).textContent =
+    vehicle.plate ||
+    "—";
+
+
+  document.getElementById(
+    "searchVin"
+  ).textContent =
+    vehicle.vin ||
+    "—";
+
+
+  document.getElementById(
+    "searchLastService"
+  ).textContent =
+    vehicle.lastService ||
+    "—";
+
+
+  document.getElementById(
+    "searchLastMileage"
+  ).textContent =
+    vehicle.lastMileage !== null &&
+    vehicle.lastMileage !== undefined &&
+    vehicle.lastMileage !== ""
+
+      ? Number(
+          vehicle.lastMileage
+        ).toLocaleString() +
+        " mi"
+
+      : "—";
+
+
+  document.getElementById(
+    "searchServiceCount"
+  ).textContent =
+    Number(
+      vehicle.serviceCount || 0
+    );
+
+
+  document.getElementById(
+    "vehicleSearchResult"
+  ).style.display =
+    "block";
+
+
+  setVehicleSearchStatus(
+    "Vehicle found",
+    false,
+    true
+  );
+
+}
+
+
+/*
+ * ============================================================
+ * OPEN SEARCHED VEHICLE HISTORY
+ * ============================================================
+ */
+
+function openSearchedVehicleHistory() {
+
+  if (
+    !searchedVehicle ||
+    !searchedVehicle.vin
+  ) {
+
+    return;
+
+  }
+
+
+  const url =
+    API_URL +
+    "?action=history" +
+    "&vin=" +
+    encodeURIComponent(
+      searchedVehicle.vin
+    ) +
+    "&view=page";
+
+
+  window.open(
+    url,
+    "_blank"
+  );
+
+}
+
+
+/*
+ * ============================================================
+ * SEARCH STATUS
+ * ============================================================
+ */
+
+function setVehicleSearchStatus(
+  message,
+  isError = false,
+  isSuccess = false
+) {
+
+  const element =
+    document.getElementById(
+      "vehicleSearchStatus"
+    );
+
+
+  element.textContent =
+    message;
+
+
+  element.style.color =
+    isError
+
+      ? "#b91c1c"
+
+      : isSuccess
+
+        ? "#15803d"
+
+        : "#475569";
 
 }
 
