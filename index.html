@@ -896,6 +896,39 @@ function hideAccessLock() {
   document.getElementById("accessError").textContent = "";
 }
 
+let pinLoginScript = null;
+
+function handlePinLogin(response) {
+  const button = document.getElementById("unlockButton");
+
+  if (pinLoginScript && pinLoginScript.parentNode) {
+    pinLoginScript.parentNode.removeChild(pinLoginScript);
+  }
+  pinLoginScript = null;
+
+  button.disabled = false;
+  button.textContent = "UNLOCK";
+
+  if (response && response.success && response.token) {
+    localStorage.setItem(ACCESS_TOKEN_KEY, response.token);
+    localStorage.setItem(
+      ACCESS_EXPIRY_KEY,
+      String(
+        response.expiresAt ||
+        (Date.now() + 30 * 24 * 60 * 60 * 1000)
+      )
+    );
+
+    hideAccessLock();
+    return;
+  }
+
+  document.getElementById("accessError").textContent =
+    (response && response.error)
+      ? response.error
+      : "Login failed.";
+}
+
 function unlockApp() {
   const pin = document.getElementById("accessPin").value.trim();
   const button = document.getElementById("unlockButton");
@@ -910,79 +943,29 @@ function unlockApp() {
   button.textContent = "CHECKING...";
   document.getElementById("accessError").textContent = "";
 
-  /*
-   * Use the same JSONP pattern as the working vehicle database calls.
-   * The callback name is placed on window before the Apps Script URL loads.
-   */
-  const callbackName =
-    "pinLoginCallback_" +
-    Date.now() +
-    "_" +
-    Math.floor(Math.random() * 1000000);
-
-  const script = document.createElement("script");
-
-  function cleanup() {
-    button.disabled = false;
-    button.textContent = "UNLOCK";
-
-    try {
-      delete window[callbackName];
-    } catch (error) {
-      window[callbackName] = undefined;
-    }
-
-    if (script.parentNode) {
-      script.parentNode.removeChild(script);
-    }
+  if (pinLoginScript && pinLoginScript.parentNode) {
+    pinLoginScript.parentNode.removeChild(pinLoginScript);
   }
 
-  window[callbackName] = function(response) {
-    if (response && response.success && response.token) {
-      localStorage.setItem(
-        ACCESS_TOKEN_KEY,
-        response.token
-      );
+  pinLoginScript = document.createElement("script");
 
-      localStorage.setItem(
-        ACCESS_EXPIRY_KEY,
-        String(
-          response.expiresAt ||
-          (Date.now() + 30 * 24 * 60 * 60 * 1000)
-        )
-      );
-
-      cleanup();
-      hideAccessLock();
-      return;
-    }
-
-    document.getElementById("accessError").textContent =
-      (response && response.error)
-        ? response.error
-        : "Incorrect PIN.";
-
-    cleanup();
-  };
-
-  script.onerror = function() {
+  pinLoginScript.onerror = function() {
+    button.disabled = false;
+    button.textContent = "UNLOCK";
     document.getElementById("accessError").textContent =
       "Could not reach login service.";
-
-    cleanup();
   };
 
-  script.src =
+  pinLoginScript.src =
     API_URL +
     "?action=login" +
     "&pin=" +
     encodeURIComponent(pin) +
-    "&callback=" +
-    encodeURIComponent(callbackName) +
+    "&callback=handlePinLogin" +
     "&_=" +
     Date.now();
 
-  document.head.appendChild(script);
+  document.body.appendChild(pinLoginScript);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
