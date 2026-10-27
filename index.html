@@ -908,52 +908,81 @@ function unlockApp() {
 
   button.disabled = true;
   button.textContent = "CHECKING...";
+  document.getElementById("accessError").textContent = "";
 
+  /*
+   * Use the same JSONP pattern as the working vehicle database calls.
+   * The callback name is placed on window before the Apps Script URL loads.
+   */
   const callbackName =
-    "accessLogin_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
-
-  window[callbackName] = function (response) {
-    try {
-      if (!response || !response.success) {
-        document.getElementById("accessError").textContent =
-          (response && response.error) || "Incorrect PIN.";
-        return;
-      }
-
-      localStorage.setItem(ACCESS_TOKEN_KEY, response.token);
-      localStorage.setItem(
-        ACCESS_EXPIRY_KEY,
-        String(response.expiresAt || (Date.now() + 30 * 24 * 60 * 60 * 1000))
-      );
-
-      hideAccessLock();
-    } finally {
-      button.disabled = false;
-      button.textContent = "UNLOCK";
-      delete window[callbackName];
-      const script = document.getElementById(callbackName);
-      if (script) script.remove();
-    }
-  };
+    "pinLoginCallback_" +
+    Date.now() +
+    "_" +
+    Math.floor(Math.random() * 1000000);
 
   const script = document.createElement("script");
-  script.id = callbackName;
+
+  function cleanup() {
+    button.disabled = false;
+    button.textContent = "UNLOCK";
+
+    try {
+      delete window[callbackName];
+    } catch (error) {
+      window[callbackName] = undefined;
+    }
+
+    if (script.parentNode) {
+      script.parentNode.removeChild(script);
+    }
+  }
+
+  window[callbackName] = function(response) {
+    if (response && response.success && response.token) {
+      localStorage.setItem(
+        ACCESS_TOKEN_KEY,
+        response.token
+      );
+
+      localStorage.setItem(
+        ACCESS_EXPIRY_KEY,
+        String(
+          response.expiresAt ||
+          (Date.now() + 30 * 24 * 60 * 60 * 1000)
+        )
+      );
+
+      cleanup();
+      hideAccessLock();
+      return;
+    }
+
+    document.getElementById("accessError").textContent =
+      (response && response.error)
+        ? response.error
+        : "Incorrect PIN.";
+
+    cleanup();
+  };
+
+  script.onerror = function() {
+    document.getElementById("accessError").textContent =
+      "Could not reach login service.";
+
+    cleanup();
+  };
+
   script.src =
     API_URL +
     "?action=login" +
-    "&pin=" + encodeURIComponent(pin) +
-    "&callback=" + encodeURIComponent(callbackName);
+    "&pin=" +
+    encodeURIComponent(pin) +
+    "&callback=" +
+    encodeURIComponent(callbackName) +
+    "&_=" +
+    Date.now();
 
-  script.onerror = function () {
-    document.getElementById("accessError").textContent =
-      "Could not reach the login service.";
-    button.disabled = false;
-    button.textContent = "UNLOCK";
-    delete window[callbackName];
-    script.remove();
-  };
-
-  document.body.appendChild(script);
+  document.head.appendChild(script);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
