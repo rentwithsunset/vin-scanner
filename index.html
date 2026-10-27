@@ -104,6 +104,20 @@
       opacity: .45;
     }
 
+    .history-button {
+      background: #0f172a;
+      color: white;
+      margin-top: 14px;
+    }
+
+    .edit-button {
+      background: #e2e8f0;
+      color: #1e293b;
+      padding: 11px;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
     #scanner {
       position: relative;
       width: 100%;
@@ -164,15 +178,85 @@
       border: 2px solid #16a34a;
     }
 
+    .vehicle-box.existing {
+      background: #eff6ff;
+      border-color: #2563eb;
+    }
+
     .vehicle-name {
       font-size: 21px;
       font-weight: bold;
       margin-bottom: 6px;
     }
 
-    .vin-display {
+    .vehicle-details {
       color: #475569;
+      margin-bottom: 7px;
+    }
+
+    .vin-display {
+      color: #64748b;
       overflow-wrap: anywhere;
+      font-size: 13px;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .badge-new {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-existing {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .database-info {
+      display: none;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #cbd5e1;
+    }
+
+    .database-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 4px 0;
+    }
+
+    .database-label {
+      color: #64748b;
+    }
+
+    .database-value {
+      font-weight: bold;
+      text-align: right;
+    }
+
+    .plate-section {
+      display: none;
+    }
+
+    .plate-display {
+      display: none;
+      margin-top: 15px;
+      padding: 13px;
+      border-radius: 9px;
+      background: #f8fafc;
+    }
+
+    .plate-number {
+      font-size: 20px;
+      font-weight: bold;
     }
 
     .price-box {
@@ -201,6 +285,10 @@
 
     .success {
       color: #15803d;
+    }
+
+    .warning {
+      color: #b45309;
     }
   </style>
 </head>
@@ -272,7 +360,7 @@
       type="button"
       onclick="decodeVINFromInput()"
     >
-      DECODE VIN
+      LOOK UP VIN
     </button>
 
 
@@ -282,14 +370,134 @@
     >
 
       <div
+        id="vehicleBadge"
+        class="badge"
+      ></div>
+
+      <div
         id="vehicleName"
         class="vehicle-name"
+      ></div>
+
+      <div
+        id="vehicleDetails"
+        class="vehicle-details"
       ></div>
 
       <div
         id="vinDisplay"
         class="vin-display"
       ></div>
+
+
+      <div
+        id="databaseInfo"
+        class="database-info"
+      >
+
+        <div class="database-row">
+          <span class="database-label">
+            Last Service
+          </span>
+
+          <span
+            id="lastService"
+            class="database-value"
+          >
+            —
+          </span>
+        </div>
+
+
+        <div class="database-row">
+          <span class="database-label">
+            Last Mileage
+          </span>
+
+          <span
+            id="lastMileage"
+            class="database-value"
+          >
+            —
+          </span>
+        </div>
+
+
+        <div class="database-row">
+          <span class="database-label">
+            Services
+          </span>
+
+          <span
+            id="serviceCount"
+            class="database-value"
+          >
+            0
+          </span>
+        </div>
+
+
+        <button
+          id="historyButton"
+          class="history-button"
+          type="button"
+          onclick="viewHistory()"
+        >
+          VIEW HISTORY
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- NEW VEHICLE PLATE ENTRY -->
+
+    <div
+      id="plateSection"
+      class="plate-section"
+    >
+
+      <label for="plate">
+        License Plate
+      </label>
+
+      <input
+        id="plate"
+        maxlength="12"
+        autocomplete="off"
+        autocapitalize="characters"
+        placeholder="Enter license plate"
+        oninput="plateChanged()"
+      >
+
+    </div>
+
+
+    <!-- EXISTING VEHICLE PLATE -->
+
+    <div
+      id="plateDisplay"
+      class="plate-display"
+    >
+
+      <div class="small">
+        License Plate
+      </div>
+
+      <div
+        id="plateNumber"
+        class="plate-number"
+      ></div>
+
+      <button
+        id="editPlateButton"
+        class="edit-button"
+        type="button"
+        onclick="editPlate()"
+      >
+        EDIT PLATE
+      </button>
 
     </div>
 
@@ -305,14 +513,17 @@
       min="1"
       step="1"
       placeholder="Enter current mileage"
-      oninput="updateCompleteButton()"
+      oninput="mileageChanged()"
     >
 
 
     <div class="price-box">
 
       <div>
-        <strong>Oil & Filter Change</strong>
+        <strong>
+          Oil & Filter Change
+        </strong>
+
         <div class="small">
           Contract service price
         </div>
@@ -341,6 +552,7 @@
 
 
 <!-- Hidden form used to send data to Apps Script -->
+
 <form
   id="serviceForm"
   method="POST"
@@ -362,6 +574,10 @@
 
 <script>
 
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbxe8iGhBAEjjLeyWEj_ws2-oEAlol9qmylOaL_WbLFRC3lr1iNsNiQ21JOPzM90106y/exec";
+
+
 let scannerStarted = false;
 
 let lastCandidate = "";
@@ -370,16 +586,27 @@ let candidateCount = 0;
 
 let vehicleData = null;
 
+let existingVehicle = false;
+
+let editingPlate = false;
+
+let lookupRequestNumber = 0;
 
 
 /*
+ * ============================================================
  * START CAMERA
+ * ============================================================
  */
+
 function startScanner() {
 
   if (scannerStarted) {
     return;
   }
+
+
+  resetVehicleResult();
 
 
   document.getElementById(
@@ -519,10 +746,12 @@ function startScanner() {
 }
 
 
-
 /*
+ * ============================================================
  * BARCODE DETECTION
+ * ============================================================
  */
+
 Quagga.onDetected(
   function(result) {
 
@@ -597,7 +826,7 @@ Quagga.onDetected(
       stopScanner(false);
 
 
-      decodeVIN(vin);
+      lookupVIN(vin);
 
     }
 
@@ -605,10 +834,12 @@ Quagga.onDetected(
 );
 
 
-
 /*
+ * ============================================================
  * STOP CAMERA
+ * ============================================================
  */
+
 function stopScanner(
   changeStatus = true
 ) {
@@ -654,10 +885,12 @@ function stopScanner(
 }
 
 
-
 /*
- * MANUAL VIN ENTRY
+ * ============================================================
+ * MANUAL VIN
+ * ============================================================
  */
+
 function vinChanged() {
 
   const input =
@@ -679,18 +912,9 @@ function vinChanged() {
       );
 
 
-  vehicleData = null;
-
-
-  document.getElementById(
-    "vehicleBox"
-  ).style.display = "none";
-
-
-  updateCompleteButton();
+  resetVehicleResult();
 
 }
-
 
 
 function decodeVINFromInput() {
@@ -703,16 +927,24 @@ function decodeVINFromInput() {
       .toUpperCase();
 
 
-  decodeVIN(vin);
+  lookupVIN(vin);
 
 }
 
 
-
 /*
- * NHTSA VIN DECODER
+ * ============================================================
+ * LOOK UP VIN
+ * ============================================================
  */
-async function decodeVIN(vin) {
+
+function lookupVIN(vin) {
+
+  vin =
+    String(vin || "")
+      .trim()
+      .toUpperCase();
+
 
   if (
     !/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)
@@ -728,8 +960,349 @@ async function decodeVIN(vin) {
   }
 
 
+  resetVehicleResult();
+
+
+  document.getElementById(
+    "vin"
+  ).value = vin;
+
+
   setStatus(
-    "Decoding VIN..."
+    "Checking vehicle database..."
+  );
+
+
+  lookupVehicleDatabase(vin);
+
+}
+
+
+/*
+ * ============================================================
+ * DATABASE LOOKUP
+ *
+ * Uses JSONP so the GitHub Pages scanner can read the
+ * Apps Script response without relying on CORS.
+ * ============================================================
+ */
+
+function lookupVehicleDatabase(vin) {
+
+  lookupRequestNumber++;
+
+  const requestNumber =
+    lookupRequestNumber;
+
+
+  const callbackName =
+    "vehicleLookupCallback_" +
+    Date.now() +
+    "_" +
+    requestNumber;
+
+
+  let script =
+    document.createElement(
+      "script"
+    );
+
+
+  let timeout;
+
+
+  window[callbackName] =
+    function(response) {
+
+      clearTimeout(timeout);
+
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+
+
+      delete window[callbackName];
+
+
+      if (
+        requestNumber !==
+        lookupRequestNumber
+      ) {
+        return;
+      }
+
+
+      if (
+        !response ||
+        response.success !== true
+      ) {
+
+        const message =
+          response &&
+          response.error
+            ? response.error
+            : "Database lookup failed";
+
+
+        setStatus(
+          message,
+          true
+        );
+
+        return;
+
+      }
+
+
+      if (
+        response.found &&
+        response.vehicle
+      ) {
+
+        loadExistingVehicle(
+          response.vehicle
+        );
+
+      }
+
+      else {
+
+        decodeNewVehicleVIN(
+          vin
+        );
+
+      }
+
+    };
+
+
+  script.onerror =
+    function() {
+
+      clearTimeout(timeout);
+
+
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+
+
+      delete window[callbackName];
+
+
+      if (
+        requestNumber !==
+        lookupRequestNumber
+      ) {
+        return;
+      }
+
+
+      setStatus(
+        "Could not reach vehicle database.",
+        true
+      );
+
+    };
+
+
+  timeout =
+    setTimeout(
+      function() {
+
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+
+
+        delete window[callbackName];
+
+
+        if (
+          requestNumber !==
+          lookupRequestNumber
+        ) {
+          return;
+        }
+
+
+        setStatus(
+          "Vehicle database lookup timed out.",
+          true
+        );
+
+      },
+      12000
+    );
+
+
+  script.src =
+    API_URL +
+    "?action=vehicle" +
+    "&vin=" +
+    encodeURIComponent(vin) +
+    "&callback=" +
+    encodeURIComponent(callbackName);
+
+
+  document.body.appendChild(
+    script
+  );
+
+}
+
+
+/*
+ * ============================================================
+ * EXISTING VEHICLE
+ * ============================================================
+ */
+
+function loadExistingVehicle(vehicle) {
+
+  existingVehicle = true;
+
+  editingPlate = false;
+
+
+  vehicleData = {
+
+    vin:
+      String(
+        vehicle.vin || ""
+      ),
+
+    year:
+      String(
+        vehicle.year || ""
+      ),
+
+    make:
+      String(
+        vehicle.make || ""
+      ),
+
+    model:
+      String(
+        vehicle.model || ""
+      ),
+
+    vehicleDetails:
+      String(
+        vehicle.vehicleDetails || ""
+      ),
+
+    plate:
+      String(
+        vehicle.plate || ""
+      )
+        .trim()
+        .toUpperCase(),
+
+    lastService:
+      vehicle.lastService || "",
+
+    lastMileage:
+      vehicle.lastMileage,
+
+    serviceCount:
+      Number(
+        vehicle.serviceCount || 0
+      )
+
+  };
+
+
+  showVehicle();
+
+
+  document.getElementById(
+    "vehicleBox"
+  ).classList.add(
+    "existing"
+  );
+
+
+  const badge =
+    document.getElementById(
+      "vehicleBadge"
+    );
+
+
+  badge.textContent =
+    "EXISTING VEHICLE";
+
+  badge.className =
+    "badge badge-existing";
+
+
+  document.getElementById(
+    "databaseInfo"
+  ).style.display =
+    "block";
+
+
+  document.getElementById(
+    "lastService"
+  ).textContent =
+    vehicleData.lastService ||
+    "—";
+
+
+  document.getElementById(
+    "lastMileage"
+  ).textContent =
+    vehicleData.lastMileage !== null &&
+    vehicleData.lastMileage !== undefined &&
+    vehicleData.lastMileage !== ""
+
+      ? Number(
+          vehicleData.lastMileage
+        ).toLocaleString() +
+        " mi"
+
+      : "—";
+
+
+  document.getElementById(
+    "serviceCount"
+  ).textContent =
+    vehicleData.serviceCount;
+
+
+  showExistingPlate();
+
+
+  setStatus(
+    "Vehicle found in database",
+    false,
+    true
+  );
+
+
+  vibrateSuccess();
+
+
+  document.getElementById(
+    "mileage"
+  ).focus();
+
+
+  updateCompleteButton();
+
+}
+
+
+/*
+ * ============================================================
+ * NEW VEHICLE - NHTSA
+ * ============================================================
+ */
+
+async function decodeNewVehicleVIN(vin) {
+
+  setStatus(
+    "New vehicle — decoding VIN..."
   );
 
 
@@ -798,53 +1371,69 @@ async function decodeVIN(vin) {
         result.Make,
 
       model:
-        result.Model
+        result.Model,
+
+      vehicleDetails:
+        buildVehicleDetails(
+          result
+        ),
+
+      plate: ""
 
     };
 
 
-    document.getElementById(
-      "vehicleName"
-    ).textContent =
-      vehicleData.year +
-      " " +
-      vehicleData.make +
-      " " +
-      vehicleData.model;
+    existingVehicle = false;
+
+    editingPlate = false;
+
+
+    showVehicle();
+
+
+    const badge =
+      document.getElementById(
+        "vehicleBadge"
+      );
+
+
+    badge.textContent =
+      "NEW VEHICLE";
+
+    badge.className =
+      "badge badge-new";
 
 
     document.getElementById(
-      "vinDisplay"
-    ).textContent =
-      vehicleData.vin;
+      "databaseInfo"
+    ).style.display =
+      "none";
 
 
     document.getElementById(
-      "vehicleBox"
+      "plateSection"
     ).style.display =
       "block";
 
 
+    document.getElementById(
+      "plateDisplay"
+    ).style.display =
+      "none";
+
+
     setStatus(
-      "Vehicle identified",
+      "New vehicle — enter license plate",
       false,
       true
     );
 
 
-    if (
-      navigator.vibrate
-    ) {
-
-      navigator.vibrate(
-        [100, 50, 100]
-      );
-
-    }
+    vibrateSuccess();
 
 
     document.getElementById(
-      "mileage"
+      "plate"
     ).focus();
 
 
@@ -873,10 +1462,482 @@ async function decodeVIN(vin) {
 }
 
 
+/*
+ * ============================================================
+ * BUILD USEFUL VEHICLE DETAILS
+ * ============================================================
+ */
+
+function buildVehicleDetails(result) {
+
+  const parts = [];
+
+
+  let displacement = "";
+
+
+  if (
+    result.DisplacementL &&
+    Number(
+      result.DisplacementL
+    ) > 0
+  ) {
+
+    const number =
+      Number(
+        result.DisplacementL
+      );
+
+
+    displacement =
+      Number.isInteger(number)
+        ? number.toFixed(1)
+        : String(
+            Math.round(
+              number * 10
+            ) / 10
+          );
+
+
+    parts.push(
+      displacement + "L"
+    );
+
+  }
+
+
+  if (
+    result.EngineCylinders &&
+    Number(
+      result.EngineCylinders
+    ) > 0
+  ) {
+
+    parts.push(
+      result.EngineCylinders +
+      "-Cylinder"
+    );
+
+  }
+
+
+  /*
+   * If displacement/cylinders weren't
+   * available, engine model can still
+   * provide useful information.
+   */
+
+  if (
+    parts.length === 0 &&
+    result.EngineModel
+  ) {
+
+    parts.push(
+      cleanVehicleText(
+        result.EngineModel
+      )
+    );
+
+  }
+
+
+  if (
+    result.FuelTypePrimary
+  ) {
+
+    const fuel =
+      cleanVehicleText(
+        result.FuelTypePrimary
+      );
+
+
+    if (
+      fuel &&
+      !/gasoline/i.test(fuel)
+    ) {
+
+      parts.push(
+        fuel
+      );
+
+    }
+
+  }
+
+
+  if (
+    result.DriveType
+  ) {
+
+    const drive =
+      simplifyDriveType(
+        result.DriveType
+      );
+
+
+    if (drive) {
+
+      parts.push(
+        drive
+      );
+
+    }
+
+  }
+
+
+  if (
+    result.Trim
+  ) {
+
+    const trim =
+      cleanVehicleText(
+        result.Trim
+      );
+
+
+    if (
+      trim &&
+      !parts.some(
+        function(item) {
+          return (
+            item.toUpperCase() ===
+            trim.toUpperCase()
+          );
+        }
+      )
+    ) {
+
+      parts.push(
+        trim
+      );
+
+    }
+
+  }
+
+
+  return parts
+    .filter(Boolean)
+    .join(" • ");
+
+}
+
+
+function cleanVehicleText(value) {
+
+  return String(
+    value || ""
+  )
+    .replace(
+      /\s+/g,
+      " "
+    )
+    .trim();
+
+}
+
+
+function simplifyDriveType(value) {
+
+  const text =
+    String(
+      value || ""
+    ).toUpperCase();
+
+
+  if (
+    text.includes(
+      "ALL-WHEEL"
+    ) ||
+    text.includes(
+      "ALL WHEEL"
+    )
+  ) {
+
+    return "AWD";
+
+  }
+
+
+  if (
+    text.includes(
+      "4-WHEEL"
+    ) ||
+    text.includes(
+      "4 WHEEL"
+    ) ||
+    text.includes(
+      "4X4"
+    )
+  ) {
+
+    return "4WD";
+
+  }
+
+
+  if (
+    text.includes(
+      "FRONT-WHEEL"
+    ) ||
+    text.includes(
+      "FRONT WHEEL"
+    )
+  ) {
+
+    return "FWD";
+
+  }
+
+
+  if (
+    text.includes(
+      "REAR-WHEEL"
+    ) ||
+    text.includes(
+      "REAR WHEEL"
+    )
+  ) {
+
+    return "RWD";
+
+  }
+
+
+  return "";
+
+}
+
 
 /*
- * ENABLE COMPLETE BUTTON
+ * ============================================================
+ * SHOW VEHICLE
+ * ============================================================
  */
+
+function showVehicle() {
+
+  if (!vehicleData) {
+    return;
+  }
+
+
+  document.getElementById(
+    "vehicleName"
+  ).textContent =
+    [
+      vehicleData.year,
+      vehicleData.make,
+      vehicleData.model
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+
+  const details =
+    document.getElementById(
+      "vehicleDetails"
+    );
+
+
+  details.textContent =
+    vehicleData.vehicleDetails || "";
+
+
+  details.style.display =
+    vehicleData.vehicleDetails
+      ? "block"
+      : "none";
+
+
+  document.getElementById(
+    "vinDisplay"
+  ).textContent =
+    vehicleData.vin;
+
+
+  document.getElementById(
+    "vehicleBox"
+  ).style.display =
+    "block";
+
+}
+
+
+/*
+ * ============================================================
+ * LICENSE PLATE
+ * ============================================================
+ */
+
+function plateChanged() {
+
+  const input =
+    document.getElementById(
+      "plate"
+    );
+
+
+  input.value =
+    input.value
+      .toUpperCase()
+      .replace(
+        /[^A-Z0-9 -]/g,
+        ""
+      )
+      .slice(
+        0,
+        12
+      );
+
+
+  updateCompleteButton();
+
+}
+
+
+function showExistingPlate() {
+
+  document.getElementById(
+    "plateSection"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "plateDisplay"
+  ).style.display =
+    "block";
+
+
+  document.getElementById(
+    "plateNumber"
+  ).textContent =
+    vehicleData.plate ||
+    "NO PLATE";
+
+
+  document.getElementById(
+    "plate"
+  ).value =
+    vehicleData.plate || "";
+
+}
+
+
+function editPlate() {
+
+  if (!vehicleData) {
+    return;
+  }
+
+
+  editingPlate = true;
+
+
+  document.getElementById(
+    "plateDisplay"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "plateSection"
+  ).style.display =
+    "block";
+
+
+  document.getElementById(
+    "plate"
+  ).value =
+    vehicleData.plate || "";
+
+
+  document.getElementById(
+    "plate"
+  ).focus();
+
+
+  setStatus(
+    "Edit the license plate, then complete the service."
+  );
+
+
+  updateCompleteButton();
+
+}
+
+
+/*
+ * ============================================================
+ * MILEAGE
+ * ============================================================
+ */
+
+function mileageChanged() {
+
+  const mileage =
+    Number(
+      document.getElementById(
+        "mileage"
+      ).value
+    );
+
+
+  /*
+   * Warn if mileage is below the previous
+   * recorded mileage, but do not hard block.
+   */
+
+  if (
+    vehicleData &&
+    existingVehicle &&
+    vehicleData.lastMileage !== null &&
+    vehicleData.lastMileage !== undefined &&
+    vehicleData.lastMileage !== "" &&
+    Number.isFinite(mileage) &&
+    mileage > 0 &&
+    mileage <
+      Number(
+        vehicleData.lastMileage
+      )
+  ) {
+
+    setStatus(
+      "Warning: mileage is lower than the last recorded mileage.",
+      false,
+      false,
+      true
+    );
+
+  }
+
+  else if (
+    vehicleData &&
+    existingVehicle
+  ) {
+
+    setStatus(
+      "Vehicle found in database",
+      false,
+      true
+    );
+
+  }
+
+
+  updateCompleteButton();
+
+}
+
+
+/*
+ * ============================================================
+ * ENABLE COMPLETE BUTTON
+ * ============================================================
+ */
+
 function updateCompleteButton() {
 
   const mileage =
@@ -887,26 +1948,63 @@ function updateCompleteButton() {
     );
 
 
+  const enteredPlate =
+    document.getElementById(
+      "plate"
+    ).value
+      .trim();
+
+
+  let validPlate = false;
+
+
+  if (
+    vehicleData
+  ) {
+
+    if (
+      existingVehicle &&
+      !editingPlate
+    ) {
+
+      validPlate =
+        !!vehicleData.plate;
+
+    }
+
+    else {
+
+      validPlate =
+        !!enteredPlate;
+
+    }
+
+  }
+
+
   document.getElementById(
     "completeButton"
   ).disabled =
     !vehicleData ||
+    !validPlate ||
     !Number.isFinite(mileage) ||
     mileage <= 0;
 
 }
 
 
-
 /*
+ * ============================================================
  * COMPLETE SERVICE
+ * ============================================================
  */
+
 function completeService() {
 
   if (!vehicleData) {
 
     setStatus(
-      "Scan or decode a VIN first.",
+      "Scan or look up a VIN first.",
       true
     );
 
@@ -930,6 +2028,43 @@ function completeService() {
 
     setStatus(
       "Enter a valid mileage.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  let plate;
+
+
+  if (
+    existingVehicle &&
+    !editingPlate
+  ) {
+
+    plate =
+      vehicleData.plate;
+
+  }
+
+  else {
+
+    plate =
+      document.getElementById(
+        "plate"
+      ).value
+        .trim()
+        .toUpperCase();
+
+  }
+
+
+  if (!plate) {
+
+    setStatus(
+      "Enter the license plate.",
       true
     );
 
@@ -964,21 +2099,24 @@ function completeService() {
     model:
       vehicleData.model,
 
+    vehicleDetails:
+      vehicleData.vehicleDetails || "",
+
+    plate:
+      plate,
+
     mileage:
       mileage
 
   };
 
 
-  /*
-   * Apps Script expects JSON.
-   *
-   * We put JSON into the hidden form.
-   */
   document.getElementById(
     "payload"
   ).value =
-    JSON.stringify(payload);
+    JSON.stringify(
+      payload
+    );
 
 
   document.getElementById(
@@ -988,14 +2126,138 @@ function completeService() {
 }
 
 
+/*
+ * ============================================================
+ * VEHICLE HISTORY
+ * ============================================================
+ */
+
+function viewHistory() {
+
+  if (
+    !vehicleData ||
+    !vehicleData.vin
+  ) {
+    return;
+  }
+
+
+  const url =
+    API_URL +
+    "?action=history" +
+    "&vin=" +
+    encodeURIComponent(
+      vehicleData.vin
+    ) +
+    "&view=page";
+
+
+  window.open(
+    url,
+    "_blank"
+  );
+
+}
+
 
 /*
- * STATUS MESSAGE
+ * ============================================================
+ * RESET VEHICLE RESULT
+ * ============================================================
  */
+
+function resetVehicleResult() {
+
+  lookupRequestNumber++;
+
+
+  vehicleData = null;
+
+  existingVehicle = false;
+
+  editingPlate = false;
+
+
+  document.getElementById(
+    "vehicleBox"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "vehicleBox"
+  ).classList.remove(
+    "existing"
+  );
+
+
+  document.getElementById(
+    "databaseInfo"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "plateSection"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "plateDisplay"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "plate"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "mileage"
+  ).value =
+    "";
+
+
+  updateCompleteButton();
+
+}
+
+
+/*
+ * ============================================================
+ * VIBRATION
+ * ============================================================
+ */
+
+function vibrateSuccess() {
+
+  if (
+    navigator.vibrate
+  ) {
+
+    navigator.vibrate(
+      [100, 50, 100]
+    );
+
+  }
+
+}
+
+
+/*
+ * ============================================================
+ * STATUS
+ * ============================================================
+ */
+
 function setStatus(
   message,
   isError = false,
-  isSuccess = false
+  isSuccess = false,
+  isWarning = false
 ) {
 
   const status =
@@ -1008,7 +2270,8 @@ function setStatus(
     message;
 
 
-  status.className = "";
+  status.className =
+    "";
 
 
   if (isError) {
@@ -1028,13 +2291,32 @@ function setStatus(
 
   }
 
+
+  if (isWarning) {
+
+    status.classList.add(
+      "warning"
+    );
+
+  }
+
 }
-  window.addEventListener(
+
+
+/*
+ * ============================================================
+ * PREVENT OLD VEHICLE AFTER BACK NAVIGATION
+ * ============================================================
+ */
+
+window.addEventListener(
   "pageshow",
   function(event) {
 
     if (event.persisted) {
+
       window.location.reload();
+
     }
 
   }
