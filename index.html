@@ -298,10 +298,87 @@
     .warning {
       color: #b45309;
     }
-  </style>
+  
+    .access-lock {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .access-card {
+      width: 100%;
+      max-width: 380px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 28px 22px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .access-card h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+    }
+
+    .access-card p {
+      margin: 0 0 20px;
+      color: #6b7280;
+    }
+
+    .access-card input {
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      font-size: 24px;
+      letter-spacing: 8px;
+      margin-bottom: 12px;
+    }
+
+    .access-error {
+      min-height: 20px;
+      margin-top: 10px;
+      color: #b91c1c;
+      font-size: 14px;
+    }
+
+    .access-hidden {
+      display: none !important;
+    }
+
+</style>
 </head>
 
 <body>
+
+<div id="accessLock" class="access-lock">
+  <div class="access-card">
+    <h1>AIRPORT GENERAL</h1>
+    <p>Internal Service System</p>
+
+    <input
+      id="accessPin"
+      type="password"
+      inputmode="numeric"
+      pattern="[0-9]*"
+      maxlength="4"
+      autocomplete="off"
+      placeholder="PIN"
+      aria-label="Access PIN"
+    >
+
+    <button id="unlockButton" type="button" onclick="unlockApp()">
+      UNLOCK
+    </button>
+
+    <div id="accessError" class="access-error"></div>
+  </div>
+</div>
+
 
 <div class="container">
 
@@ -787,6 +864,126 @@
 
 const API_URL =
   "https://script.google.com/macros/s/AKfycbxe8iGhBAEjjLeyWEj_ws2-oEAlol9qmylOaL_WbLFRC3lr1iNsNiQ21JOPzM90106y/exec";
+
+
+const ACCESS_TOKEN_KEY = "airport_general_access_token";
+const ACCESS_EXPIRY_KEY = "airport_general_access_expiry";
+
+function getAccessToken() {
+  const token = localStorage.getItem(ACCESS_TOKEN_KEY) || "";
+  const expiry = Number(localStorage.getItem(ACCESS_EXPIRY_KEY) || 0);
+
+  if (!token || !expiry || Date.now() >= expiry) {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(ACCESS_EXPIRY_KEY);
+    return "";
+  }
+
+  return token;
+}
+
+function showAccessLock(message) {
+  document.getElementById("accessLock").classList.remove("access-hidden");
+  document.getElementById("accessError").textContent = message || "";
+  setTimeout(function () {
+    document.getElementById("accessPin").focus();
+  }, 50);
+}
+
+function hideAccessLock() {
+  document.getElementById("accessLock").classList.add("access-hidden");
+  document.getElementById("accessPin").value = "";
+  document.getElementById("accessError").textContent = "";
+}
+
+function unlockApp() {
+  const pin = document.getElementById("accessPin").value.trim();
+  const button = document.getElementById("unlockButton");
+
+  if (!/^\d{4}$/.test(pin)) {
+    document.getElementById("accessError").textContent =
+      "Enter your 4-digit PIN.";
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "CHECKING...";
+
+  const callbackName =
+    "accessLogin_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+
+  window[callbackName] = function (response) {
+    try {
+      if (!response || !response.success) {
+        document.getElementById("accessError").textContent =
+          (response && response.error) || "Incorrect PIN.";
+        return;
+      }
+
+      localStorage.setItem(ACCESS_TOKEN_KEY, response.token);
+      localStorage.setItem(
+        ACCESS_EXPIRY_KEY,
+        String(response.expiresAt || (Date.now() + 30 * 24 * 60 * 60 * 1000))
+      );
+
+      hideAccessLock();
+    } finally {
+      button.disabled = false;
+      button.textContent = "UNLOCK";
+      delete window[callbackName];
+      const script = document.getElementById(callbackName);
+      if (script) script.remove();
+    }
+  };
+
+  const script = document.createElement("script");
+  script.id = callbackName;
+  script.src =
+    API_URL +
+    "?action=login" +
+    "&pin=" + encodeURIComponent(pin) +
+    "&callback=" + encodeURIComponent(callbackName);
+
+  script.onerror = function () {
+    document.getElementById("accessError").textContent =
+      "Could not reach the login service.";
+    button.disabled = false;
+    button.textContent = "UNLOCK";
+    delete window[callbackName];
+    script.remove();
+  };
+
+  document.body.appendChild(script);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const pinInput = document.getElementById("accessPin");
+
+  pinInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      unlockApp();
+    }
+  });
+
+  if (getAccessToken()) {
+    hideAccessLock();
+  } else {
+    showAccessLock();
+  }
+});
+
+function withAccessToken(url) {
+  const token = getAccessToken();
+
+  if (!token) {
+    showAccessLock("Enter the PIN to continue.");
+    return url;
+  }
+
+  return url +
+    (url.indexOf("?") === -1 ? "?" : "&") +
+    "token=" + encodeURIComponent(token);
+}
 
 
 let scannerStarted = false;
@@ -1350,12 +1547,14 @@ function lookupVehicleDatabase(vin) {
 
 
   script.src =
+    withAccessToken(
     API_URL +
     "?action=vehicle" +
     "&vin=" +
     encodeURIComponent(vin) +
     "&callback=" +
-    encodeURIComponent(callbackName);
+    encodeURIComponent(callbackName)
+  );
 
 
   document.body.appendChild(
@@ -2300,6 +2499,9 @@ function completeService() {
 
   const payload = {
 
+    token:
+      getAccessToken(),
+
     vin:
       vehicleData.vin,
 
@@ -2361,13 +2563,15 @@ function viewHistory() {
 
 
   const url =
-    API_URL +
-    "?action=history" +
-    "&vin=" +
-    encodeURIComponent(
-      vehicleData.vin
-    ) +
-    "&view=page";
+    withAccessToken(
+      API_URL +
+      "?action=history" +
+      "&vin=" +
+      encodeURIComponent(
+        vehicleData.vin
+      ) +
+      "&view=page"
+    );
 
 
   window.open(
@@ -2846,6 +3050,7 @@ function searchVehicleDatabase() {
 
 
   script.src =
+    withAccessToken(
     API_URL +
     "?action=searchvehicle" +
     "&query=" +
@@ -2855,7 +3060,8 @@ function searchVehicleDatabase() {
     "&callback=" +
     encodeURIComponent(
       callbackName
-    );
+    )
+  );
 
 
   document.body.appendChild(
@@ -2990,13 +3196,15 @@ function openSearchedVehicleHistory() {
 
 
   const url =
-    API_URL +
-    "?action=history" +
-    "&vin=" +
-    encodeURIComponent(
-      searchedVehicle.vin
-    ) +
-    "&view=page";
+    withAccessToken(
+      API_URL +
+      "?action=history" +
+      "&vin=" +
+      encodeURIComponent(
+        searchedVehicle.vin
+      ) +
+      "&view=page"
+    );
 
 
   window.open(
