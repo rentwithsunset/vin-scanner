@@ -433,17 +433,17 @@
   </div>
 
   <div class="small">
-    Search by license plate or VIN
+    Search by VIN, license plate, or unit number
   </div>
 
 
   <input
     id="vehicleSearch"
     type="text"
-    maxlength="17"
+    maxlength="20"
     autocomplete="off"
     autocapitalize="characters"
-    placeholder="Plate or VIN"
+    placeholder="VIN, plate, or unit #"
     style="margin-top:14px;"
     oninput="vehicleSearchChanged()"
     onkeydown="vehicleSearchKeyDown(event)"
@@ -524,6 +524,18 @@
 
         <div
           id="searchPlate"
+          style="font-weight:bold;"
+        ></div>
+      </div>
+
+
+      <div>
+        <span class="small">
+          Unit #
+        </span>
+
+        <div
+          id="searchUnitNumber"
           style="font-weight:bold;"
         ></div>
       </div>
@@ -777,6 +789,21 @@
       </button>
 
     </div>
+
+
+    <label for="unitNumber">
+      Unit Number
+    </label>
+
+    <input
+      id="unitNumber"
+      type="text"
+      maxlength="20"
+      autocomplete="off"
+      autocapitalize="characters"
+      placeholder="Enter unit number"
+      oninput="unitNumberChanged()"
+    >
 
 
     <label for="mileage">
@@ -1377,7 +1404,7 @@ function vinChanged() {
       )
       .slice(
         0,
-        17
+        20
       );
 
 
@@ -1581,6 +1608,13 @@ function loadExistingVehicle(vehicle) {
         .trim()
         .toUpperCase(),
 
+    unitNumber:
+      String(
+        vehicle.unitNumber || ""
+      )
+        .trim()
+        .toUpperCase(),
+
     lastService:
       vehicle.lastService || "",
 
@@ -1653,6 +1687,12 @@ function loadExistingVehicle(vehicle) {
 
 
   showExistingPlate();
+
+
+  document.getElementById(
+    "unitNumber"
+  ).value =
+    vehicleData.unitNumber || "";
 
 
   setStatus(
@@ -1760,7 +1800,9 @@ async function decodeNewVehicleVIN(vin) {
           result
         ),
 
-      plate: ""
+      plate: "",
+
+      unitNumber: ""
 
     };
 
@@ -1805,7 +1847,7 @@ async function decodeNewVehicleVIN(vin) {
 
 
     setStatus(
-      "New vehicle — enter license plate",
+      "New vehicle — enter license plate and unit number",
       false,
       true
     );
@@ -2253,6 +2295,30 @@ function editPlate() {
 
 /*
  * ============================================================
+ * UNIT NUMBER
+ * ============================================================
+ */
+
+function unitNumberChanged() {
+
+  const input =
+    document.getElementById(
+      "unitNumber"
+    );
+
+  input.value =
+    input.value
+      .toUpperCase()
+      .replace(/[^A-Z0-9 -]/g, "")
+      .slice(0, 20);
+
+  updateCompleteButton();
+
+}
+
+
+/*
+ * ============================================================
  * MILEAGE
  * ============================================================
  */
@@ -2322,6 +2388,12 @@ function mileageChanged() {
 
 function updateCompleteButton() {
 
+  const unitNumber =
+    document.getElementById(
+      "unitNumber"
+    ).value.trim();
+
+
   const mileage =
     Number(
       document.getElementById(
@@ -2369,6 +2441,7 @@ function updateCompleteButton() {
   ).disabled =
     !vehicleData ||
     !validPlate ||
+    !unitNumber ||
     !Number.isFinite(mileage) ||
     mileage <= 0;
 
@@ -2455,6 +2528,26 @@ function completeService() {
   }
 
 
+  const unitNumber =
+    document.getElementById(
+      "unitNumber"
+    ).value
+      .trim()
+      .toUpperCase();
+
+
+  if (!unitNumber) {
+
+    setStatus(
+      "Enter the unit number.",
+      true
+    );
+
+    return;
+
+  }
+
+
   const button =
     document.getElementById(
       "completeButton"
@@ -2485,6 +2578,9 @@ vin:
 
     plate:
       plate,
+
+    unitNumber:
+      unitNumber,
 
     mileage:
       mileage,
@@ -2599,6 +2695,12 @@ function resetVehicleResult() {
 
   document.getElementById(
     "plate"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "unitNumber"
   ).value =
     "";
 
@@ -2845,7 +2947,7 @@ function searchVehicleDatabase() {
   if (!query) {
 
     setVehicleSearchStatus(
-      "Enter a license plate or VIN.",
+      "Enter a VIN, license plate, or unit number.",
       true
     );
 
@@ -2968,6 +3070,13 @@ function displayVehicleSearchResult(
     "searchPlate"
   ).textContent =
     vehicle.plate ||
+    "—";
+
+
+  document.getElementById(
+    "searchUnitNumber"
+  ).textContent =
+    vehicle.unitNumber ||
     "—";
 
 
