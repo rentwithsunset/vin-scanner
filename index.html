@@ -55,12 +55,20 @@
       font-size: 14px;
     }
 
-    input {
+    input,
+    textarea {
       width: 100%;
       padding: 14px;
       border: 1px solid #cbd5e1;
       border-radius: 9px;
       font-size: 17px;
+      font-family: Arial, sans-serif;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+      line-height: 1.4;
     }
 
     input[readonly] {
@@ -709,11 +717,22 @@
     >
 
 
+    <label for="notes">
+      Notes / Comments
+    </label>
+
+    <textarea
+      id="notes"
+      maxlength="1000"
+      placeholder="Optional — enter any service notes or comments"
+    ></textarea>
+
+
     <div class="price-box">
 
       <div>
         <strong>
-          Oil & Filter Change
+          Oil & Filter Change — 5W-30 Synthetic Blend, Up to 5 Qts + 7-Point Inspection
         </strong>
 
         <div class="small">
@@ -2300,7 +2319,12 @@ function completeService() {
       plate,
 
     mileage:
-      mileage
+      mileage,
+
+    notes:
+      document.getElementById(
+        "notes"
+      ).value.trim()
 
   };
 
