@@ -1,31 +1,3227 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
-<script nonce="j8S1R3uTB5KNjAtEW_KWag">window['ppConfig'] = {productName: '26981ed0d57bbad37e728ff58134270c', deleteIsEnforced:  false , sealIsEnforced:  false , heartbeatRate:  0.5 , periodicReportingRateMillis:  60000.0 , disableAllReporting:  false };(function(){'use strict';function k(a){var b=0;return function(){return b<a.length?{done:!1,value:a[b++]}:{done:!0}}}function l(a){var b=typeof Symbol!="undefined"&&Symbol.iterator&&a[Symbol.iterator];if(b)return b.call(a);if(typeof a.length=="number")return{next:k(a)};throw Error(String(a)+" is not an iterable or ArrayLike");}function m(a,b){var c;b&&!b.done&&(c=a["return"])&&c.call(a)}
-var n=typeof Object.defineProperties=="function"?Object.defineProperty:function(a,b,c){if(a==Array.prototype||a==Object.prototype)return a;a[b]=c.value;return a};function p(a){a=["object"==typeof globalThis&&globalThis,a,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var b=0;b<a.length;++b){var c=a[b];if(c&&c.Math==Math)return c}throw Error("Cannot find global object");}var q=p(this);
-function r(a,b){if(b)a:{var c=q;a=a.split(".");for(var d=0;d<a.length-1;d++){var e=a[d];if(!(e in c))break a;c=c[e]}a=a[a.length-1];d=c[a];b=b(d);b!=d&&b!=null&&n(c,a,{configurable:!0,writable:!0,value:b})}}r("Object.is",function(a){return a?a:function(b,c){return b===c?b!==0||1/b===1/c:b!==b&&c!==c}});
-r("Array.prototype.includes",function(a){return a?a:function(b,c){var d=this;d instanceof String&&(d=String(d));var e=d.length;c=c||0;for(c<0&&(c=Math.max(c+e,0));c<e;c++){var f=d[c];if(f===b||Object.is(f,b))return!0}return!1}});
-r("String.prototype.includes",function(a){return a?a:function(b,c){if(this==null)throw new TypeError("The 'this' value for String.prototype.includes must not be null or undefined");if(b instanceof RegExp)throw new TypeError("First argument to String.prototype.includes must not be a regular expression");return this.indexOf(b,c||0)!==-1}});function t(a,b,c){a("https://csp.withgoogle.com/csp/proto/"+encodeURIComponent(b),JSON.stringify(c))}function u(){var a;if((a=window.ppConfig)==null?0:a.disableAllReporting)return function(){};var b,c,d,e;return(e=(b=window)==null?void 0:(c=b.navigator)==null?void 0:(d=c.sendBeacon)==null?void 0:d.bind(navigator))!=null?e:v}function v(a,b){var c=new XMLHttpRequest;c.open("POST",a);c.send(b)}
-function w(){var a=(x=Object.prototype)==null?void 0:x.__lookupGetter__("__proto__"),b=y,c=z;return function(){var d=a.call(this),e,f,g,h;t(c,b,{type:"ACCESS_GET",origin:(f=window.location.origin)!=null?f:"unknown",report:{className:(g=d==null?void 0:(e=d.constructor)==null?void 0:e.name)!=null?g:"unknown",stackTrace:(h=Error().stack)!=null?h:"unknown"}});return d}}
-function A(){var a=(B=Object.prototype)==null?void 0:B.__lookupSetter__("__proto__"),b=y,c=z;return function(d){d=a.call(this,d);var e,f,g,h;t(c,b,{type:"ACCESS_SET",origin:(f=window.location.origin)!=null?f:"unknown",report:{className:(g=d==null?void 0:(e=d.constructor)==null?void 0:e.name)!=null?g:"unknown",stackTrace:(h=Error().stack)!=null?h:"unknown"}});return d}}function C(a,b){D(a.productName,b);setInterval(function(){D(a.productName,b)},a.periodicReportingRateMillis)}
-var E="constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString x_ngfn_x".split(" "),F=E.concat,G=navigator.userAgent.match(/Firefox\/([0-9]+)\./),H=(!G||G.length<2?0:Number(G[1])<75)?["toSource"]:[],I;if(H instanceof Array)I=H;else{for(var J=l(H),K,L=[];!(K=J.next()).done;)L.push(K.value);I=L}var M=F.call(E,I),N=[];
-function D(a,b){var c=[],d=l(Object.getOwnPropertyNames(Object.prototype)),e=d.next();try{for(;!e.done;e=d.next()){var f=e.value;M.includes(f)||N.includes(f)||c.push(f)}}finally{m(d,e)}e=Object.prototype;d=[];for(f=0;f<c.length;f++){var g=c[f];d[f]={name:g,descriptor:Object.getOwnPropertyDescriptor(Object.prototype,g),type:typeof e[g]}}if(d.length!==0){c=l(d);e=c.next();try{for(;!e.done;e=c.next())N.push(e.value.name)}finally{m(c,e)}var h;t(b,a,{type:"SEAL",origin:(h=window.location.origin)!=null?
-h:"unknown",report:{blockers:d}})}};var O=Math.random(),P=u(),Q=window.ppConfig;Q&&(Q.disableAllReporting||Q.deleteIsEnforced&&Q.sealIsEnforced||O<Q.heartbeatRate&&t(P,Q.productName,{origin:window.location.origin,type:"HEARTBEAT"}));var z=u(),R=window.ppConfig;if(R)if(R.deleteIsEnforced)delete Object.prototype.__proto__;else if(!R.disableAllReporting){var y=R.productName;try{var x,B;Object.defineProperty(Object.prototype,"__proto__",{enumerable:!1,get:w(),set:A()})}catch(a){}}
-(function(){var a=u(),b=window.ppConfig;b&&(b.sealIsEnforced?Object.seal(Object.prototype):b.disableAllReporting||(document.readyState!=="loading"?C(b,a):document.addEventListener("DOMContentLoaded",function(){C(b,a)})))})();}).call(this);
-</script><meta name="chromevox" content-script="no">
-<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" nonce="YePdcI1Q2R1CfsvCLK1VXw"><link rel="stylesheet" href="/static/macros/client/css/2208734863-mae_html_css_ltr.css">
-<script type="text/javascript" src="/static/macros/client/js/767571878-warden_bin_i18n_warden.js" nonce="j8S1R3uTB5KNjAtEW_KWag"></script>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  >
+
+  <title>U-Save Oil Change</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 4px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 6px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 9px;
+      font-size: 17px;
+      font-family: Arial, sans-serif;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    input[readonly] {
+      background: #f8fafc;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .start {
+      background: #15803d;
+      color: white;
+    }
+
+    .stop {
+      background: #6b7280;
+      color: white;
+    }
+
+    .manual {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    .complete {
+      background: #166534;
+      color: white;
+      margin-top: 22px;
+      font-size: 19px;
+    }
+
+    .complete:disabled {
+      opacity: .45;
+    }
+
+    .history-button {
+      background: #0f172a;
+      color: white;
+      margin-top: 14px;
+    }
+
+    .edit-button {
+      background: #e2e8f0;
+      color: #1e293b;
+      padding: 11px;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    #scanner {
+      position: relative;
+      width: 100%;
+      height: 320px;
+      margin-top: 18px;
+      background: #111;
+      overflow: hidden;
+      border-radius: 12px;
+      display: none;
+    }
+
+    #scanner video,
+    #scanner canvas {
+      position: absolute;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+      left: 0;
+      top: 0;
+    }
+
+    .scan-guide {
+      position: absolute;
+      z-index: 20;
+      left: 5%;
+      right: 5%;
+      top: 38%;
+      height: 80px;
+      border: 3px solid #22c55e;
+      border-radius: 7px;
+      pointer-events: none;
+    }
+
+    .scan-line {
+      position: absolute;
+      z-index: 21;
+      left: 7%;
+      right: 7%;
+      top: 50%;
+      height: 2px;
+      background: #ef4444;
+      pointer-events: none;
+    }
+
+    #status {
+      margin-top: 16px;
+      text-align: center;
+      font-weight: bold;
+      min-height: 22px;
+    }
+
+    .vehicle-box {
+      display: none;
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 10px;
+      background: #ecfdf5;
+      border: 2px solid #16a34a;
+    }
+
+    .vehicle-box.existing {
+      background: #eff6ff;
+      border-color: #2563eb;
+    }
+
+    .vehicle-name {
+      font-size: 21px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .vehicle-details {
+      color: #475569;
+      margin-bottom: 7px;
+    }
+
+    .vin-display {
+      color: #64748b;
+      overflow-wrap: anywhere;
+      font-size: 13px;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .badge-new {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-existing {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .database-info {
+      display: none;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #cbd5e1;
+    }
+
+    .database-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 4px 0;
+    }
+
+    .database-label {
+      color: #64748b;
+    }
+
+    .database-value {
+      font-weight: bold;
+      text-align: right;
+    }
+
+    .plate-section {
+      display: none;
+    }
+
+    .plate-display {
+      display: none;
+      margin-top: 15px;
+      padding: 13px;
+      border-radius: 9px;
+      background: #f8fafc;
+    }
+
+    .plate-number {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .price-box {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 10px;
+      background: #f8fafc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .price {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .small {
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .error {
+      color: #b91c1c;
+    }
+
+    .success {
+      color: #15803d;
+    }
+
+    .warning {
+      color: #b45309;
+    }
+  
+    .access-lock {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .access-card {
+      width: 100%;
+      max-width: 380px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 28px 22px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .access-card h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+    }
+
+    .access-card p {
+      margin: 0 0 20px;
+      color: #6b7280;
+    }
+
+    .access-card input {
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      font-size: 24px;
+      letter-spacing: 8px;
+      margin-bottom: 12px;
+    }
+
+    .access-error {
+      min-height: 20px;
+      margin-top: 10px;
+      color: #b91c1c;
+      font-size: 14px;
+    }
+
+    .access-hidden {
+      display: none !important;
+    }
+
+</style>
 </head>
+
 <body>
-<table id="warning-bar-table" class="full_size" cellspacing="0" cellpadding="0"><tr><td><div id="warning" class="warning-bar"></div></td></tr><tr><td style="height: 100%"><iframe id="sandboxFrame" allow="accelerometer *; autoplay *; clipboard-read *; clipboard-write *; encrypted-media *; fullscreen *; geolocation *; gyroscope *; local-network-access *; magnetometer *; midi *; payment *; picture-in-picture *; screen-wake-lock *; sync-xhr *; web-share *" sandbox="allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation allow-storage-access-by-user-activation">
-</iframe>
-</td></tr></table><script nonce="j8S1R3uTB5KNjAtEW_KWag">
-(function() {
-var el = document.getElementById('sandboxFrame');
-el.onload = function() {
-goog.script.init("\x7b\x22functionNames\x22:\x5b\x22doGet\x22,\x22searchVehicle\x22,\x22normalizePlateForSearch\x22,\x22createAccessLoginPage\x22,\x22isValidAccessToken\x22,\x22doPost\x22,\x22saveService\x22,\x22findVehicleByVin\x22,\x22upsertVehicle\x22,\x22setVehicleHistoryLink\x22,\x22getVehicleHistory\x22,\x22createVehicleHistoryPage\x22,\x22updateVehiclePlate\x22,\x22getNextInvoiceNumber\x22,\x22createServiceInvoicePdf\x22,\x22getInvoiceMonthFolder\x22,\x22getOrCreateFolder\x22,\x22regenerateInvoice\x22,\x22setTableHeaderBold\x22,\x22formatMoney\x22,\x22createPrintableInvoicePage\x22,\x22createSuccessPage\x22,\x22createErrorPage\x22,\x22getServiceHistorySheet\x22,\x22getVehiclesSheet\x22,\x22normalizeVin\x22,\x22normalizePlate\x22,\x22isValidVin\x22,\x22formatDateForApi\x22,\x22formatInvoiceDateDisplay\x22,\x22formatTimeForApi\x22,\x22jsonResponse\x22,\x22escapeHtml\x22,\x22testSetup\x22\x5d,\x22sandboxMode\x22:\x22IFRAME_SANDBOX\x22,\x22callbackTimeout\x22:390000,\x22deploymentId\x22:\x22AKfycbxe8iGhBAEjjLeyWEj_ws2-oEAlol9qmylOaL_WbLFRC3lr1iNsNiQ21JOPzM90106y\x22,\x22eei\x22:\x22\x22,\x22sandboxHost\x22:\x22https:\/\/n-7jjspxxdueqsbibdzxwzbxay3dgz65xiqbvc5li-0lu-script.googleusercontent.com\x22,\x22clientSideProperties\x22:\x7b\x22google.script.sandbox.mode\x22:\x22IFRAME_SANDBOX\x22,\x22google.script.use_fetch_for_post_form\x22:true,\x22google.script.host.origin\x22:\x22https:\/\/docs.google.com\x22\x7d,\x22actionPrefix\x22:\x22\/macros\/s\/AKfycbxe8iGhBAEjjLeyWEj_ws2-oEAlol9qmylOaL_WbLFRC3lr1iNsNiQ21JOPzM90106y\x22,\x22userHtml\x22:\x22\x3c!DOCTYPE html\x3e\\n\x3chtml\x3e\\n\x3chead\x3e\\n  \x3cmeta name\x3d\\\x22viewport\\\x22 content\x3d\\\x22width\x3ddevice-width, initial-scale\x3d1, maximum-scale\x3d1\\\x22\x3e\\n  \x3ctitle\x3eAirport General Access\x3c\\\/title\x3e\\n  \x3cstyle\x3e\\n    * \x7b box-sizing: border-box; \x7d\\n    body \x7b\\n      margin: 0;\\n      min-height: 100vh;\\n      display: flex;\\n      align-items: center;\\n      justify-content: center;\\n      padding: 24px;\\n      font-family: Arial, sans-serif;\\n      background: #f4f6f8;\\n      color: #1f2937;\\n    \x7d\\n    .card \x7b\\n      width: 100%;\\n      max-width: 380px;\\n      padding: 28px 22px;\\n      background: white;\\n      border: 1px solid #d1d5db;\\n      border-radius: 12px;\\n      text-align: center;\\n    \x7d\\n    h1 \x7b margin: 0 0 6px; font-size: 24px; \x7d\\n    p \x7b margin: 0 0 20px; color: #6b7280; \x7d\\n    input \x7b\\n      width: 100%;\\n      padding: 14px;\\n      border: 1px solid #cbd5e1;\\n      border-radius: 9px;\\n      text-align: center;\\n      font-size: 24px;\\n      letter-spacing: 8px;\\n    \x7d\\n    button \x7b\\n      width: 100%;\\n      margin-top: 12px;\\n      padding: 16px;\\n      border: 0;\\n      border-radius: 10px;\\n      background: #166534;\\n      color: white;\\n      font-size: 17px;\\n      font-weight: bold;\\n      cursor: pointer;\\n    \x7d\\n    .error \x7b\\n      min-height: 20px;\\n      margin-top: 12px;\\n      color: #b91c1c;\\n      font-size: 14px;\\n    \x7d\\n  \x3c\\\/style\x3e\\n\x3c\\\/head\x3e\\n\x3cbody\x3e\\n  \x3cform class\x3d\\\x22card\\\x22 method\x3d\\\x22POST\\\x22 action\x3d\\\x22https:\/\/script.google.com\/macros\/s\/AKfycbxe8iGhBAEjjLeyWEj_ws2-oEAlol9qmylOaL_WbLFRC3lr1iNsNiQ21JOPzM90106y\/exec\\\x22\x3e\\n    \x3ch1\x3eAIRPORT GENERAL\x3c\\\/h1\x3e\\n    \x3cp\x3eInternal Service System\x3c\\\/p\x3e\\n    \x3cinput type\x3d\\\x22hidden\\\x22 name\x3d\\\x22action\\\x22 value\x3d\\\x22accessLogin\\\x22\x3e\\n    \x3cinput\\n      name\x3d\\\x22pin\\\x22\\n      type\x3d\\\x22password\\\x22\\n      inputmode\x3d\\\x22numeric\\\x22\\n      pattern\x3d\\\x22\x5b0-9\x5d\x7b4\x7d\\\x22\\n      maxlength\x3d\\\x224\\\x22\\n      autocomplete\x3d\\\x22off\\\x22\\n      placeholder\x3d\\\x22PIN\\\x22\\n      aria-label\x3d\\\x22Access PIN\\\x22\\n      required\\n      autofocus\\n    \x3e\\n    \x3cbutton type\x3d\\\x22submit\\\x22\x3eUNLOCK\x3c\\\/button\x3e\\n    \x3cdiv class\x3d\\\x22error\\\x22\x3e\x3c\\\/div\x3e\\n  \x3c\\\/form\x3e\\n\x3c\\\/body\x3e\\n\x3c\\\/html\x3e\x22,\x22ncc\x22:\x22\x7b\\\x22awhs\\\x22:true\x7d\x22\x7d", "AMllMq-NZwQatY5JVcKQoYtmfAaL:1793087321676", undefined, true , true  , "true", "https:\/\/n-7jjspxxdueqsbibdzxwzbxay3dgz65xiqbvc5li-0lu-script.googleusercontent.com", "https:\/\/drive.google.com\/abuse?id\x3dAFS7AdsfLX0Wnzpw_VuTh0_dLgt7yz-Z-6pvASsDM4NKtGOUiwqE9oqOwkswaQO9676zqkH4aXZJ-vxNsP2vQsGnQEezzCIQ6SxStUxG%3A0\x26docurl\x3dhttps%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbxe8iGhBAEjjLeyWEj_ws2-oEAlol9qmylOaL_WbLFRC3lr1iNsNiQ21JOPzM90106y%2Fexec%3Faction%3Daccess");}
-el.src = 'https:\/\/n-7jjspxxdueqsbibdzxwzbxay3dgz65xiqbvc5li-0lu-script.googleusercontent.com\/userCodeAppPanel?createOAuthDialog\x3dtrue';
-}());
+
+<div id="accessLock" class="access-lock">
+  <div class="access-card">
+    <h1>AIRPORT GENERAL</h1>
+    <p>Internal Service System</p>
+
+    <input
+      id="accessPin"
+      type="password"
+      inputmode="numeric"
+      pattern="[0-9]*"
+      maxlength="4"
+      autocomplete="off"
+      placeholder="PIN"
+      aria-label="Access PIN"
+    >
+
+    <button id="unlockButton" type="button" onclick="unlockApp()">
+      UNLOCK
+    </button>
+
+    <div id="accessError" class="access-error"></div>
+  </div>
+</div>
+
+
+<div class="container">
+
+  <div class="card">
+
+    <h1>Oil Change</h1>
+
+    <div class="subtitle">
+      U-Save Service
+    </div>
+
+
+    <button
+      id="startButton"
+      class="start"
+      type="button"
+      onclick="startScanner()"
+    >
+      SCAN VIN
+    </button>
+
+    <button
+  class="manual"
+  type="button"
+  onclick="openVehicleLookup()"
+>
+  VEHICLE LOOKUP
+</button>
+
+<!-- VEHICLE LOOKUP -->
+
+<div
+  id="vehicleLookupBox"
+  style="
+    display:none;
+    margin-top:18px;
+    padding:18px;
+    background:#f8fafc;
+    border:1px solid #cbd5e1;
+    border-radius:12px;
+  "
+>
+
+  <div
+    style="
+      font-size:19px;
+      font-weight:bold;
+      margin-bottom:4px;
+    "
+  >
+    Vehicle Lookup
+  </div>
+
+  <div class="small">
+    Search by license plate or VIN
+  </div>
+
+
+  <input
+    id="vehicleSearch"
+    type="text"
+    maxlength="17"
+    autocomplete="off"
+    autocapitalize="characters"
+    placeholder="Plate or VIN"
+    style="margin-top:14px;"
+    oninput="vehicleSearchChanged()"
+    onkeydown="vehicleSearchKeyDown(event)"
+  >
+
+
+  <button
+    class="start"
+    type="button"
+    onclick="searchVehicleDatabase()"
+  >
+    SEARCH
+  </button>
+
+
+  <button
+    class="manual"
+    type="button"
+    onclick="closeVehicleLookup()"
+  >
+    CANCEL
+  </button>
+
+
+  <div
+    id="vehicleSearchStatus"
+    style="
+      margin-top:14px;
+      text-align:center;
+      font-weight:bold;
+      min-height:20px;
+    "
+  ></div>
+
+
+  <div
+    id="vehicleSearchResult"
+    style="
+      display:none;
+      margin-top:15px;
+      padding:16px;
+      background:white;
+      border:2px solid #2563eb;
+      border-radius:10px;
+    "
+  >
+
+    <div
+      id="searchVehicleName"
+      style="
+        font-size:20px;
+        font-weight:bold;
+      "
+    ></div>
+
+
+    <div
+      id="searchVehicleDetails"
+      style="
+        margin-top:5px;
+        color:#475569;
+      "
+    ></div>
+
+
+    <div
+      style="
+        margin-top:13px;
+        display:grid;
+        gap:7px;
+      "
+    >
+
+      <div>
+        <span class="small">
+          Plate
+        </span>
+
+        <div
+          id="searchPlate"
+          style="font-weight:bold;"
+        ></div>
+      </div>
+
+
+      <div>
+        <span class="small">
+          VIN
+        </span>
+
+        <div
+          id="searchVin"
+          style="
+            font-size:13px;
+            overflow-wrap:anywhere;
+          "
+        ></div>
+      </div>
+
+
+      <div>
+        <span class="small">
+          Last Service
+        </span>
+
+        <div
+          id="searchLastService"
+          style="font-weight:bold;"
+        ></div>
+      </div>
+
+
+      <div>
+        <span class="small">
+          Last Mileage
+        </span>
+
+        <div
+          id="searchLastMileage"
+          style="font-weight:bold;"
+        ></div>
+      </div>
+
+
+      <div>
+        <span class="small">
+          Total Services
+        </span>
+
+        <div
+          id="searchServiceCount"
+          style="font-weight:bold;"
+        ></div>
+      </div>
+
+    </div>
+
+
+    <button
+      class="history-button"
+      type="button"
+      onclick="openSearchedVehicleHistory()"
+    >
+      VIEW FULL HISTORY
+    </button>
+
+  </div>
+
+</div>
+    <div id="scanner">
+
+      <div class="scan-guide"></div>
+
+      <div class="scan-line"></div>
+
+    </div>
+
+
+    <button
+      id="stopButton"
+      class="stop"
+      type="button"
+      onclick="stopScanner()"
+      style="display:none;"
+    >
+      STOP CAMERA
+    </button>
+
+
+    <div id="status">
+      Ready to scan
+    </div>
+
+
+    <label for="vin">
+      VIN
+    </label>
+
+    <input
+      id="vin"
+      maxlength="17"
+      autocomplete="off"
+      autocapitalize="characters"
+      placeholder="Scan or enter VIN"
+      oninput="vinChanged()"
+    >
+
+
+    <button
+      class="manual"
+      type="button"
+      onclick="decodeVINFromInput()"
+    >
+      LOOK UP VIN
+    </button>
+
+
+    <div
+      id="vehicleBox"
+      class="vehicle-box"
+    >
+
+      <div
+        id="vehicleBadge"
+        class="badge"
+      ></div>
+
+      <div
+        id="vehicleName"
+        class="vehicle-name"
+      ></div>
+
+      <div
+        id="vehicleDetails"
+        class="vehicle-details"
+      ></div>
+
+      <div
+        id="vinDisplay"
+        class="vin-display"
+      ></div>
+
+
+      <div
+        id="databaseInfo"
+        class="database-info"
+      >
+
+        <div class="database-row">
+          <span class="database-label">
+            Last Service
+          </span>
+
+          <span
+            id="lastService"
+            class="database-value"
+          >
+            —
+          </span>
+        </div>
+
+
+        <div class="database-row">
+          <span class="database-label">
+            Last Mileage
+          </span>
+
+          <span
+            id="lastMileage"
+            class="database-value"
+          >
+            —
+          </span>
+        </div>
+
+
+        <div class="database-row">
+          <span class="database-label">
+            Services
+          </span>
+
+          <span
+            id="serviceCount"
+            class="database-value"
+          >
+            0
+          </span>
+        </div>
+
+
+        <button
+          id="historyButton"
+          class="history-button"
+          type="button"
+          onclick="viewHistory()"
+        >
+          VIEW HISTORY
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- NEW VEHICLE PLATE ENTRY -->
+
+    <div
+      id="plateSection"
+      class="plate-section"
+    >
+
+      <label for="plate">
+        License Plate
+      </label>
+
+      <input
+        id="plate"
+        maxlength="12"
+        autocomplete="off"
+        autocapitalize="characters"
+        placeholder="Enter license plate"
+        oninput="plateChanged()"
+      >
+
+    </div>
+
+
+    <!-- EXISTING VEHICLE PLATE -->
+
+    <div
+      id="plateDisplay"
+      class="plate-display"
+    >
+
+      <div class="small">
+        License Plate
+      </div>
+
+      <div
+        id="plateNumber"
+        class="plate-number"
+      ></div>
+
+      <button
+        id="editPlateButton"
+        class="edit-button"
+        type="button"
+        onclick="editPlate()"
+      >
+        EDIT PLATE
+      </button>
+
+    </div>
+
+
+    <label for="mileage">
+      Mileage
+    </label>
+
+    <input
+      id="mileage"
+      type="number"
+      inputmode="numeric"
+      min="1"
+      step="1"
+      placeholder="Enter current mileage"
+      oninput="mileageChanged()"
+    >
+
+
+    <label for="notes">
+      Notes / Comments
+    </label>
+
+    <textarea
+      id="notes"
+      maxlength="1000"
+      placeholder="Optional — enter any service notes or comments"
+    ></textarea>
+
+
+    <div class="price-box">
+
+      <div>
+        <strong>
+          Oil & Filter Change — 5W-30 Synthetic Blend, Up to 5 Qts + 7-Point Inspection
+        </strong>
+
+        <div class="small">
+          Contract service price
+        </div>
+      </div>
+
+      <div class="price">
+        $65.00
+      </div>
+
+    </div>
+
+
+    <button
+      id="completeButton"
+      class="complete"
+      type="button"
+      onclick="completeService()"
+      disabled
+    >
+      COMPLETE OIL CHANGE
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- Hidden form used to send data to Apps Script -->
+
+<form
+  id="serviceForm"
+  method="POST"
+  action="https://script.google.com/macros/s/AKfycbxe8iGhBAEjjLeyWEj_ws2-oEAlol9qmylOaL_WbLFRC3lr1iNsNiQ21JOPzM90106y/exec"
+  style="display:none;"
+>
+
+  <input
+    type="hidden"
+    name="payload"
+    id="payload"
+  >
+
+</form>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
+
+
+<script>
+
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbxe8iGhBAEjjLeyWEj_ws2-oEAlol9qmylOaL_WbLFRC3lr1iNsNiQ21JOPzM90106y/exec";
+
+
+const ACCESS_TOKEN_KEY = "airport_general_access_token";
+const ACCESS_EXPIRY_KEY = "airport_general_access_expiry";
+
+function getAccessToken() {
+  const token = localStorage.getItem(ACCESS_TOKEN_KEY) || "";
+  const expiry = Number(localStorage.getItem(ACCESS_EXPIRY_KEY) || 0);
+
+  if (!token || !expiry || Date.now() >= expiry) {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(ACCESS_EXPIRY_KEY);
+    return "";
+  }
+
+  return token;
+}
+
+const GITHUB_ACCESS_PIN = "1999";
+const GITHUB_UNLOCK_KEY = "airport_general_github_unlocked";
+
+function showAccessLock(message) {
+  document.getElementById("accessLock").classList.remove("access-hidden");
+  document.getElementById("accessError").textContent = message || "";
+  setTimeout(function () {
+    document.getElementById("accessPin").focus();
+  }, 50);
+}
+
+function hideAccessLock() {
+  document.getElementById("accessLock").classList.add("access-hidden");
+  document.getElementById("accessPin").value = "";
+  document.getElementById("accessError").textContent = "";
+}
+
+function unlockApp() {
+  const pin = document.getElementById("accessPin").value.trim();
+
+  if (!/^\d{4}$/.test(pin)) {
+    document.getElementById("accessError").textContent =
+      "Enter your 4-digit PIN.";
+    return;
+  }
+
+  if (pin !== GITHUB_ACCESS_PIN) {
+    document.getElementById("accessError").textContent =
+      "Incorrect PIN.";
+    document.getElementById("accessPin").select();
+    return;
+  }
+
+  localStorage.setItem(GITHUB_UNLOCK_KEY, "1");
+  hideAccessLock();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const pinInput = document.getElementById("accessPin");
+
+  pinInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      unlockApp();
+    }
+  });
+
+  if (localStorage.getItem(GITHUB_UNLOCK_KEY) === "1") {
+    hideAccessLock();
+  } else {
+    showAccessLock();
+  }
+});
+
+function withAccessToken(url) {
+  return url;
+}
+
+
+let scannerStarted = false;
+
+let lastCandidate = "";
+
+let candidateCount = 0;
+
+let vehicleData = null;
+
+let existingVehicle = false;
+
+let editingPlate = false;
+
+let lookupRequestNumber = 0;
+
+let searchedVehicle = null;
+
+
+/*
+ * ============================================================
+ * START CAMERA
+ * ============================================================
+ */
+
+function startScanner() {
+
+  if (scannerStarted) {
+    return;
+  }
+
+
+  resetVehicleResult();
+
+
+  document.getElementById(
+    "scanner"
+  ).style.display = "block";
+
+
+  document.getElementById(
+    "stopButton"
+  ).style.display = "block";
+
+
+  setStatus(
+    "Starting camera..."
+  );
+
+
+  Quagga.init({
+
+    inputStream: {
+
+      name: "Live",
+
+      type: "LiveStream",
+
+      target:
+        document.querySelector(
+          "#scanner"
+        ),
+
+      constraints: {
+
+        facingMode: {
+          ideal: "environment"
+        },
+
+        width: {
+          ideal: 1920
+        },
+
+        height: {
+          ideal: 1080
+        }
+
+      },
+
+      area: {
+
+        top: "25%",
+
+        right: "5%",
+
+        left: "5%",
+
+        bottom: "25%"
+
+      }
+
+    },
+
+
+    locator: {
+
+      patchSize: "medium",
+
+      halfSample: true
+
+    },
+
+
+    numOfWorkers:
+      navigator.hardwareConcurrency
+        ? Math.min(
+            navigator.hardwareConcurrency,
+            4
+          )
+        : 2,
+
+
+    frequency: 10,
+
+
+    decoder: {
+
+      readers: [
+
+        "code_128_reader",
+
+        "code_39_reader",
+
+        "code_93_reader",
+
+        "codabar_reader"
+
+      ]
+
+    },
+
+
+    locate: true
+
+
+  },
+
+  function(error) {
+
+    if (error) {
+
+      console.error(error);
+
+      setStatus(
+        "Camera error: " +
+        (
+          error.message ||
+          error.name ||
+          error
+        ),
+        true
+      );
+
+      return;
+
+    }
+
+
+    scannerStarted = true;
+
+    Quagga.start();
+
+
+    setStatus(
+      "Point camera at VIN barcode"
+    );
+
+  });
+
+}
+
+
+/*
+ * ============================================================
+ * BARCODE DETECTION
+ * ============================================================
+ */
+
+Quagga.onDetected(
+  function(result) {
+
+    if (
+      !result ||
+      !result.codeResult ||
+      !result.codeResult.code
+    ) {
+      return;
+    }
+
+
+    let raw =
+      String(
+        result.codeResult.code
+      )
+      .toUpperCase()
+      .trim();
+
+
+    const matches =
+      raw.match(
+        /[A-HJ-NPR-Z0-9]{17}/g
+      );
+
+
+    if (
+      !matches ||
+      matches.length === 0
+    ) {
+      return;
+    }
+
+
+    const vin =
+      matches[0];
+
+
+    if (
+      vin === lastCandidate
+    ) {
+
+      candidateCount++;
+
+    }
+
+    else {
+
+      lastCandidate = vin;
+
+      candidateCount = 1;
+
+    }
+
+
+    setStatus(
+      "Reading VIN... " +
+      candidateCount +
+      "/2"
+    );
+
+
+    if (
+      candidateCount >= 2
+    ) {
+
+      document.getElementById(
+        "vin"
+      ).value = vin;
+
+
+      stopScanner(false);
+
+
+      lookupVIN(vin);
+
+    }
+
+  }
+);
+
+
+/*
+ * ============================================================
+ * STOP CAMERA
+ * ============================================================
+ */
+
+function stopScanner(
+  changeStatus = true
+) {
+
+  if (scannerStarted) {
+
+    try {
+      Quagga.stop();
+    }
+
+    catch (error) {
+      console.log(error);
+    }
+
+  }
+
+
+  scannerStarted = false;
+
+  lastCandidate = "";
+
+  candidateCount = 0;
+
+
+  document.getElementById(
+    "scanner"
+  ).style.display = "none";
+
+
+  document.getElementById(
+    "stopButton"
+  ).style.display = "none";
+
+
+  if (changeStatus) {
+
+    setStatus(
+      "Camera stopped"
+    );
+
+  }
+
+}
+
+
+/*
+ * ============================================================
+ * MANUAL VIN
+ * ============================================================
+ */
+
+function vinChanged() {
+
+  const input =
+    document.getElementById(
+      "vin"
+    );
+
+
+  input.value =
+    input.value
+      .toUpperCase()
+      .replace(
+        /[^A-HJ-NPR-Z0-9]/g,
+        ""
+      )
+      .slice(
+        0,
+        17
+      );
+
+
+  resetVehicleResult();
+
+}
+
+
+function decodeVINFromInput() {
+
+  const vin =
+    document.getElementById(
+      "vin"
+    ).value
+      .trim()
+      .toUpperCase();
+
+
+  lookupVIN(vin);
+
+}
+
+
+/*
+ * ============================================================
+ * LOOK UP VIN
+ * ============================================================
+ */
+
+function lookupVIN(vin) {
+
+  vin =
+    String(vin || "")
+      .trim()
+      .toUpperCase();
+
+
+  if (
+    !/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)
+  ) {
+
+    setStatus(
+      "VIN must contain exactly 17 valid characters.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  resetVehicleResult();
+
+
+  document.getElementById(
+    "vin"
+  ).value = vin;
+
+
+  setStatus(
+    "Checking vehicle database..."
+  );
+
+
+  lookupVehicleDatabase(vin);
+
+}
+
+
+/*
+ * ============================================================
+ * DATABASE LOOKUP
+ *
+ * Uses JSONP so the GitHub Pages scanner can read the
+ * Apps Script response without relying on CORS.
+ * ============================================================
+ */
+
+function lookupVehicleDatabase(vin) {
+
+  lookupRequestNumber++;
+
+  const requestNumber =
+    lookupRequestNumber;
+
+
+  const callbackName =
+    "vehicleLookupCallback_" +
+    Date.now() +
+    "_" +
+    requestNumber;
+
+
+  let script =
+    document.createElement(
+      "script"
+    );
+
+
+  let timeout;
+
+
+  window[callbackName] =
+    function(response) {
+
+      clearTimeout(timeout);
+
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+
+
+      delete window[callbackName];
+
+
+      if (
+        requestNumber !==
+        lookupRequestNumber
+      ) {
+        return;
+      }
+
+
+      if (
+        !response ||
+        response.success !== true
+      ) {
+
+        const message =
+          response &&
+          response.error
+            ? response.error
+            : "Database lookup failed";
+
+
+        setStatus(
+          message,
+          true
+        );
+
+        return;
+
+      }
+
+
+      if (
+        response.found &&
+        response.vehicle
+      ) {
+
+        loadExistingVehicle(
+          response.vehicle
+        );
+
+      }
+
+      else {
+
+        decodeNewVehicleVIN(
+          vin
+        );
+
+      }
+
+    };
+
+
+  script.onerror =
+    function() {
+
+      clearTimeout(timeout);
+
+
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+
+
+      delete window[callbackName];
+
+
+      if (
+        requestNumber !==
+        lookupRequestNumber
+      ) {
+        return;
+      }
+
+
+      setStatus(
+        "Could not reach vehicle database.",
+        true
+      );
+
+    };
+
+
+  timeout =
+    setTimeout(
+      function() {
+
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+
+
+        delete window[callbackName];
+
+
+        if (
+          requestNumber !==
+          lookupRequestNumber
+        ) {
+          return;
+        }
+
+
+        setStatus(
+          "Vehicle database lookup timed out.",
+          true
+        );
+
+      },
+      12000
+    );
+
+
+  script.src =
+    withAccessToken(
+    API_URL +
+    "?action=vehicle" +
+    "&vin=" +
+    encodeURIComponent(vin) +
+    "&callback=" +
+    encodeURIComponent(callbackName)
+  );
+
+
+  document.body.appendChild(
+    script
+  );
+
+}
+
+
+/*
+ * ============================================================
+ * EXISTING VEHICLE
+ * ============================================================
+ */
+
+function loadExistingVehicle(vehicle) {
+
+  existingVehicle = true;
+
+  editingPlate = false;
+
+
+  vehicleData = {
+
+    vin:
+      String(
+        vehicle.vin || ""
+      ),
+
+    year:
+      String(
+        vehicle.year || ""
+      ),
+
+    make:
+      String(
+        vehicle.make || ""
+      ),
+
+    model:
+      String(
+        vehicle.model || ""
+      ),
+
+    vehicleDetails:
+      String(
+        vehicle.vehicleDetails || ""
+      ),
+
+    plate:
+      String(
+        vehicle.plate || ""
+      )
+        .trim()
+        .toUpperCase(),
+
+    lastService:
+      vehicle.lastService || "",
+
+    lastMileage:
+      vehicle.lastMileage,
+
+    serviceCount:
+      Number(
+        vehicle.serviceCount || 0
+      )
+
+  };
+
+
+  showVehicle();
+
+
+  document.getElementById(
+    "vehicleBox"
+  ).classList.add(
+    "existing"
+  );
+
+
+  const badge =
+    document.getElementById(
+      "vehicleBadge"
+    );
+
+
+  badge.textContent =
+    "EXISTING VEHICLE";
+
+  badge.className =
+    "badge badge-existing";
+
+
+  document.getElementById(
+    "databaseInfo"
+  ).style.display =
+    "block";
+
+
+  document.getElementById(
+    "lastService"
+  ).textContent =
+    vehicleData.lastService ||
+    "—";
+
+
+  document.getElementById(
+    "lastMileage"
+  ).textContent =
+    vehicleData.lastMileage !== null &&
+    vehicleData.lastMileage !== undefined &&
+    vehicleData.lastMileage !== ""
+
+      ? Number(
+          vehicleData.lastMileage
+        ).toLocaleString() +
+        " mi"
+
+      : "—";
+
+
+  document.getElementById(
+    "serviceCount"
+  ).textContent =
+    vehicleData.serviceCount;
+
+
+  showExistingPlate();
+
+
+  setStatus(
+    "Vehicle found in database",
+    false,
+    true
+  );
+
+
+  vibrateSuccess();
+
+
+  document.getElementById(
+    "mileage"
+  ).focus();
+
+
+  updateCompleteButton();
+
+}
+
+
+/*
+ * ============================================================
+ * NEW VEHICLE - NHTSA
+ * ============================================================
+ */
+
+async function decodeNewVehicleVIN(vin) {
+
+  setStatus(
+    "New vehicle — decoding VIN..."
+  );
+
+
+  try {
+
+    const url =
+      "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/" +
+      encodeURIComponent(vin) +
+      "?format=json";
+
+
+    const response =
+      await fetch(url);
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "VIN decoder unavailable"
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    if (
+      !data.Results ||
+      !data.Results.length
+    ) {
+
+      throw new Error(
+        "No vehicle information returned"
+      );
+
+    }
+
+
+    const result =
+      data.Results[0];
+
+
+    if (
+      !result.ModelYear ||
+      !result.Make ||
+      !result.Model
+    ) {
+
+      throw new Error(
+        "Vehicle could not be identified"
+      );
+
+    }
+
+
+    vehicleData = {
+
+      vin: vin,
+
+      year:
+        result.ModelYear,
+
+      make:
+        result.Make,
+
+      model:
+        result.Model,
+
+      vehicleDetails:
+        buildVehicleDetails(
+          result
+        ),
+
+      plate: ""
+
+    };
+
+
+    existingVehicle = false;
+
+    editingPlate = false;
+
+
+    showVehicle();
+
+
+    const badge =
+      document.getElementById(
+        "vehicleBadge"
+      );
+
+
+    badge.textContent =
+      "NEW VEHICLE";
+
+    badge.className =
+      "badge badge-new";
+
+
+    document.getElementById(
+      "databaseInfo"
+    ).style.display =
+      "none";
+
+
+    document.getElementById(
+      "plateSection"
+    ).style.display =
+      "block";
+
+
+    document.getElementById(
+      "plateDisplay"
+    ).style.display =
+      "none";
+
+
+    setStatus(
+      "New vehicle — enter license plate",
+      false,
+      true
+    );
+
+
+    vibrateSuccess();
+
+
+    document.getElementById(
+      "plate"
+    ).focus();
+
+
+    updateCompleteButton();
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    vehicleData = null;
+
+
+    setStatus(
+      "VIN decode failed: " +
+      error.message,
+      true
+    );
+
+
+    updateCompleteButton();
+
+  }
+
+}
+
+
+/*
+ * ============================================================
+ * BUILD USEFUL VEHICLE DETAILS
+ * ============================================================
+ */
+
+function buildVehicleDetails(result) {
+
+  const parts = [];
+
+
+  let displacement = "";
+
+
+  if (
+    result.DisplacementL &&
+    Number(
+      result.DisplacementL
+    ) > 0
+  ) {
+
+    const number =
+      Number(
+        result.DisplacementL
+      );
+
+
+    displacement =
+      Number.isInteger(number)
+        ? number.toFixed(1)
+        : String(
+            Math.round(
+              number * 10
+            ) / 10
+          );
+
+
+    parts.push(
+      displacement + "L"
+    );
+
+  }
+
+
+  if (
+    result.EngineCylinders &&
+    Number(
+      result.EngineCylinders
+    ) > 0
+  ) {
+
+    parts.push(
+      result.EngineCylinders +
+      "-Cylinder"
+    );
+
+  }
+
+
+  /*
+   * If displacement/cylinders weren't
+   * available, engine model can still
+   * provide useful information.
+   */
+
+  if (
+    parts.length === 0 &&
+    result.EngineModel
+  ) {
+
+    parts.push(
+      cleanVehicleText(
+        result.EngineModel
+      )
+    );
+
+  }
+
+
+  if (
+    result.FuelTypePrimary
+  ) {
+
+    const fuel =
+      cleanVehicleText(
+        result.FuelTypePrimary
+      );
+
+
+    if (
+      fuel &&
+      !/gasoline/i.test(fuel)
+    ) {
+
+      parts.push(
+        fuel
+      );
+
+    }
+
+  }
+
+
+  if (
+    result.DriveType
+  ) {
+
+    const drive =
+      simplifyDriveType(
+        result.DriveType
+      );
+
+
+    if (drive) {
+
+      parts.push(
+        drive
+      );
+
+    }
+
+  }
+
+
+  if (
+    result.Trim
+  ) {
+
+    const trim =
+      cleanVehicleText(
+        result.Trim
+      );
+
+
+    if (
+      trim &&
+      !parts.some(
+        function(item) {
+          return (
+            item.toUpperCase() ===
+            trim.toUpperCase()
+          );
+        }
+      )
+    ) {
+
+      parts.push(
+        trim
+      );
+
+    }
+
+  }
+
+
+  return parts
+    .filter(Boolean)
+    .join(" • ");
+
+}
+
+
+function cleanVehicleText(value) {
+
+  return String(
+    value || ""
+  )
+    .replace(
+      /\s+/g,
+      " "
+    )
+    .trim();
+
+}
+
+
+function simplifyDriveType(value) {
+
+  const text =
+    String(
+      value || ""
+    ).toUpperCase();
+
+
+  if (
+    text.includes(
+      "ALL-WHEEL"
+    ) ||
+    text.includes(
+      "ALL WHEEL"
+    )
+  ) {
+
+    return "AWD";
+
+  }
+
+
+  if (
+    text.includes(
+      "4-WHEEL"
+    ) ||
+    text.includes(
+      "4 WHEEL"
+    ) ||
+    text.includes(
+      "4X4"
+    )
+  ) {
+
+    return "4WD";
+
+  }
+
+
+  if (
+    text.includes(
+      "FRONT-WHEEL"
+    ) ||
+    text.includes(
+      "FRONT WHEEL"
+    )
+  ) {
+
+    return "FWD";
+
+  }
+
+
+  if (
+    text.includes(
+      "REAR-WHEEL"
+    ) ||
+    text.includes(
+      "REAR WHEEL"
+    )
+  ) {
+
+    return "RWD";
+
+  }
+
+
+  return "";
+
+}
+
+
+/*
+ * ============================================================
+ * SHOW VEHICLE
+ * ============================================================
+ */
+
+function showVehicle() {
+
+  if (!vehicleData) {
+    return;
+  }
+
+
+  document.getElementById(
+    "vehicleName"
+  ).textContent =
+    [
+      vehicleData.year,
+      vehicleData.make,
+      vehicleData.model
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+
+  const details =
+    document.getElementById(
+      "vehicleDetails"
+    );
+
+
+  details.textContent =
+    vehicleData.vehicleDetails || "";
+
+
+  details.style.display =
+    vehicleData.vehicleDetails
+      ? "block"
+      : "none";
+
+
+  document.getElementById(
+    "vinDisplay"
+  ).textContent =
+    vehicleData.vin;
+
+
+  document.getElementById(
+    "vehicleBox"
+  ).style.display =
+    "block";
+
+}
+
+
+/*
+ * ============================================================
+ * LICENSE PLATE
+ * ============================================================
+ */
+
+function plateChanged() {
+
+  const input =
+    document.getElementById(
+      "plate"
+    );
+
+
+  input.value =
+    input.value
+      .toUpperCase()
+      .replace(
+        /[^A-Z0-9 -]/g,
+        ""
+      )
+      .slice(
+        0,
+        12
+      );
+
+
+  updateCompleteButton();
+
+}
+
+
+function showExistingPlate() {
+
+  document.getElementById(
+    "plateSection"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "plateDisplay"
+  ).style.display =
+    "block";
+
+
+  document.getElementById(
+    "plateNumber"
+  ).textContent =
+    vehicleData.plate ||
+    "NO PLATE";
+
+
+  document.getElementById(
+    "plate"
+  ).value =
+    vehicleData.plate || "";
+
+}
+
+
+function editPlate() {
+
+  if (!vehicleData) {
+    return;
+  }
+
+
+  editingPlate = true;
+
+
+  document.getElementById(
+    "plateDisplay"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "plateSection"
+  ).style.display =
+    "block";
+
+
+  document.getElementById(
+    "plate"
+  ).value =
+    vehicleData.plate || "";
+
+
+  document.getElementById(
+    "plate"
+  ).focus();
+
+
+  setStatus(
+    "Edit the license plate, then complete the service."
+  );
+
+
+  updateCompleteButton();
+
+}
+
+
+/*
+ * ============================================================
+ * MILEAGE
+ * ============================================================
+ */
+
+function mileageChanged() {
+
+  const mileage =
+    Number(
+      document.getElementById(
+        "mileage"
+      ).value
+    );
+
+
+  /*
+   * Warn if mileage is below the previous
+   * recorded mileage, but do not hard block.
+   */
+
+  if (
+    vehicleData &&
+    existingVehicle &&
+    vehicleData.lastMileage !== null &&
+    vehicleData.lastMileage !== undefined &&
+    vehicleData.lastMileage !== "" &&
+    Number.isFinite(mileage) &&
+    mileage > 0 &&
+    mileage <
+      Number(
+        vehicleData.lastMileage
+      )
+  ) {
+
+    setStatus(
+      "Warning: mileage is lower than the last recorded mileage.",
+      false,
+      false,
+      true
+    );
+
+  }
+
+  else if (
+    vehicleData &&
+    existingVehicle
+  ) {
+
+    setStatus(
+      "Vehicle found in database",
+      false,
+      true
+    );
+
+  }
+
+
+  updateCompleteButton();
+
+}
+
+
+/*
+ * ============================================================
+ * ENABLE COMPLETE BUTTON
+ * ============================================================
+ */
+
+function updateCompleteButton() {
+
+  const mileage =
+    Number(
+      document.getElementById(
+        "mileage"
+      ).value
+    );
+
+
+  const enteredPlate =
+    document.getElementById(
+      "plate"
+    ).value
+      .trim();
+
+
+  let validPlate = false;
+
+
+  if (
+    vehicleData
+  ) {
+
+    if (
+      existingVehicle &&
+      !editingPlate
+    ) {
+
+      validPlate =
+        !!vehicleData.plate;
+
+    }
+
+    else {
+
+      validPlate =
+        !!enteredPlate;
+
+    }
+
+  }
+
+
+  document.getElementById(
+    "completeButton"
+  ).disabled =
+    !vehicleData ||
+    !validPlate ||
+    !Number.isFinite(mileage) ||
+    mileage <= 0;
+
+}
+
+
+/*
+ * ============================================================
+ * COMPLETE SERVICE
+ * ============================================================
+ */
+
+function completeService() {
+
+  if (!vehicleData) {
+
+    setStatus(
+      "Scan or look up a VIN first.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  const mileage =
+    Number(
+      document.getElementById(
+        "mileage"
+      ).value
+    );
+
+
+  if (
+    !Number.isFinite(mileage) ||
+    mileage <= 0
+  ) {
+
+    setStatus(
+      "Enter a valid mileage.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  let plate;
+
+
+  if (
+    existingVehicle &&
+    !editingPlate
+  ) {
+
+    plate =
+      vehicleData.plate;
+
+  }
+
+  else {
+
+    plate =
+      document.getElementById(
+        "plate"
+      ).value
+        .trim()
+        .toUpperCase();
+
+  }
+
+
+  if (!plate) {
+
+    setStatus(
+      "Enter the license plate.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  const button =
+    document.getElementById(
+      "completeButton"
+    );
+
+
+  button.disabled = true;
+
+  button.textContent =
+    "SAVING...";
+
+
+  const payload = {
+vin:
+      vehicleData.vin,
+
+    year:
+      vehicleData.year,
+
+    make:
+      vehicleData.make,
+
+    model:
+      vehicleData.model,
+
+    vehicleDetails:
+      vehicleData.vehicleDetails || "",
+
+    plate:
+      plate,
+
+    mileage:
+      mileage,
+
+    notes:
+      document.getElementById(
+        "notes"
+      ).value.trim()
+
+  };
+
+
+  document.getElementById(
+    "payload"
+  ).value =
+    JSON.stringify(
+      payload
+    );
+
+
+  document.getElementById(
+    "serviceForm"
+  ).submit();
+
+}
+
+
+/*
+ * ============================================================
+ * VEHICLE HISTORY
+ * ============================================================
+ */
+
+function viewHistory() {
+
+  if (
+    !vehicleData ||
+    !vehicleData.vin
+  ) {
+    return;
+  }
+
+
+  const url =
+    withAccessToken(
+      API_URL +
+      "?action=history" +
+      "&vin=" +
+      encodeURIComponent(
+        vehicleData.vin
+      ) +
+      "&view=page"
+    );
+
+
+  window.open(
+    url,
+    "_blank"
+  );
+
+}
+
+
+/*
+ * ============================================================
+ * RESET VEHICLE RESULT
+ * ============================================================
+ */
+
+function resetVehicleResult() {
+
+  lookupRequestNumber++;
+
+
+  vehicleData = null;
+
+  existingVehicle = false;
+
+  editingPlate = false;
+
+
+  document.getElementById(
+    "vehicleBox"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "vehicleBox"
+  ).classList.remove(
+    "existing"
+  );
+
+
+  document.getElementById(
+    "databaseInfo"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "plateSection"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "plateDisplay"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "plate"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "mileage"
+  ).value =
+    "";
+
+
+  updateCompleteButton();
+
+}
+
+
+/*
+ * ============================================================
+ * VIBRATION
+ * ============================================================
+ */
+
+function vibrateSuccess() {
+
+  if (
+    navigator.vibrate
+  ) {
+
+    navigator.vibrate(
+      [100, 50, 100]
+    );
+
+  }
+
+}
+
+
+/*
+ * ============================================================
+ * STATUS
+ * ============================================================
+ */
+
+function setStatus(
+  message,
+  isError = false,
+  isSuccess = false,
+  isWarning = false
+) {
+
+  const status =
+    document.getElementById(
+      "status"
+    );
+
+
+  status.textContent =
+    message;
+
+
+  status.className =
+    "";
+
+
+  if (isError) {
+
+    status.classList.add(
+      "error"
+    );
+
+  }
+
+
+  if (isSuccess) {
+
+    status.classList.add(
+      "success"
+    );
+
+  }
+
+
+  if (isWarning) {
+
+    status.classList.add(
+      "warning"
+    );
+
+  }
+
+}
+  /*
+ * ============================================================
+ * VEHICLE LOOKUP SCREEN
+ * ============================================================
+ */
+
+function openVehicleLookup() {
+
+  stopScanner(false);
+
+
+  document.getElementById(
+    "vehicleLookupBox"
+  ).style.display =
+    "block";
+
+
+  document.getElementById(
+    "vehicleSearch"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "vehicleSearchResult"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "vehicleSearchStatus"
+  ).textContent =
+    "";
+
+
+  searchedVehicle = null;
+
+
+  setTimeout(
+    function() {
+
+      document.getElementById(
+        "vehicleSearch"
+      ).focus();
+
+    },
+    100
+  );
+
+}
+
+
+function closeVehicleLookup() {
+
+  document.getElementById(
+    "vehicleLookupBox"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "vehicleSearchResult"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "vehicleSearchStatus"
+  ).textContent =
+    "";
+
+
+  searchedVehicle = null;
+
+}
+
+
+/*
+ * ============================================================
+ * SEARCH INPUT
+ * ============================================================
+ */
+
+function vehicleSearchChanged() {
+
+  const input =
+    document.getElementById(
+      "vehicleSearch"
+    );
+
+
+  input.value =
+    input.value
+      .toUpperCase()
+      .replace(
+        /[^A-Z0-9 -]/g,
+        ""
+      )
+      .slice(
+        0,
+        17
+      );
+
+
+  document.getElementById(
+    "vehicleSearchResult"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "vehicleSearchStatus"
+  ).textContent =
+    "";
+
+
+  searchedVehicle = null;
+
+}
+
+
+function vehicleSearchKeyDown(
+  event
+) {
+
+  if (
+    event.key === "Enter"
+  ) {
+
+    event.preventDefault();
+
+    searchVehicleDatabase();
+
+  }
+
+}
+
+
+/*
+ * ============================================================
+ * SEARCH DATABASE
+ * ============================================================
+ */
+
+function searchVehicleDatabase() {
+
+  const query =
+    document.getElementById(
+      "vehicleSearch"
+    ).value
+      .trim()
+      .toUpperCase();
+
+
+  if (!query) {
+
+    setVehicleSearchStatus(
+      "Enter a license plate or VIN.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  searchedVehicle = null;
+
+
+  document.getElementById(
+    "vehicleSearchResult"
+  ).style.display =
+    "none";
+
+
+  setVehicleSearchStatus(
+    "Searching..."
+  );
+
+
+  const callbackName =
+    "vehicleSearchCallback_" +
+    Date.now();
+
+
+  const script =
+    document.createElement(
+      "script"
+    );
+
+
+  let timeout;
+
+
+  window[callbackName] =
+    function(response) {
+
+      clearTimeout(
+        timeout
+      );
+
+
+      if (
+        script.parentNode
+      ) {
+
+        script.parentNode
+          .removeChild(
+            script
+          );
+
+      }
+
+
+      delete window[
+        callbackName
+      ];
+
+
+      if (
+        !response ||
+        response.success !== true
+      ) {
+
+        setVehicleSearchStatus(
+          response &&
+          response.error
+
+            ? response.error
+
+            : "Vehicle search failed.",
+
+          true
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !response.found ||
+        !response.vehicle
+      ) {
+
+        setVehicleSearchStatus(
+          "No vehicle found.",
+          true
+        );
+
+        return;
+
+      }
+
+
+      displayVehicleSearchResult(
+        response.vehicle
+      );
+
+    };
+
+
+  script.onerror =
+    function() {
+
+      clearTimeout(
+        timeout
+      );
+
+
+      if (
+        script.parentNode
+      ) {
+
+        script.parentNode
+          .removeChild(
+            script
+          );
+
+      }
+
+
+      delete window[
+        callbackName
+      ];
+
+
+      setVehicleSearchStatus(
+        "Could not reach vehicle database.",
+        true
+      );
+
+    };
+
+
+  timeout =
+    setTimeout(
+      function() {
+
+        if (
+          script.parentNode
+        ) {
+
+          script.parentNode
+            .removeChild(
+              script
+            );
+
+        }
+
+
+        delete window[
+          callbackName
+        ];
+
+
+        setVehicleSearchStatus(
+          "Vehicle search timed out.",
+          true
+        );
+
+      },
+      12000
+    );
+
+
+  script.src =
+    withAccessToken(
+    API_URL +
+    "?action=searchvehicle" +
+    "&query=" +
+    encodeURIComponent(
+      query
+    ) +
+    "&callback=" +
+    encodeURIComponent(
+      callbackName
+    )
+  );
+
+
+  document.body.appendChild(
+    script
+  );
+
+}
+
+
+/*
+ * ============================================================
+ * DISPLAY SEARCH RESULT
+ * ============================================================
+ */
+
+function displayVehicleSearchResult(
+  vehicle
+) {
+
+  searchedVehicle =
+    vehicle;
+
+
+  const vehicleName =
+    [
+      vehicle.year,
+      vehicle.make,
+      vehicle.model
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+
+  document.getElementById(
+    "searchVehicleName"
+  ).textContent =
+    vehicleName;
+
+
+  const details =
+    document.getElementById(
+      "searchVehicleDetails"
+    );
+
+
+  details.textContent =
+    vehicle.vehicleDetails ||
+    "";
+
+
+  details.style.display =
+    vehicle.vehicleDetails
+      ? "block"
+      : "none";
+
+
+  document.getElementById(
+    "searchPlate"
+  ).textContent =
+    vehicle.plate ||
+    "—";
+
+
+  document.getElementById(
+    "searchVin"
+  ).textContent =
+    vehicle.vin ||
+    "—";
+
+
+  document.getElementById(
+    "searchLastService"
+  ).textContent =
+    vehicle.lastService ||
+    "—";
+
+
+  document.getElementById(
+    "searchLastMileage"
+  ).textContent =
+    vehicle.lastMileage !== null &&
+    vehicle.lastMileage !== undefined &&
+    vehicle.lastMileage !== ""
+
+      ? Number(
+          vehicle.lastMileage
+        ).toLocaleString() +
+        " mi"
+
+      : "—";
+
+
+  document.getElementById(
+    "searchServiceCount"
+  ).textContent =
+    Number(
+      vehicle.serviceCount || 0
+    );
+
+
+  document.getElementById(
+    "vehicleSearchResult"
+  ).style.display =
+    "block";
+
+
+  setVehicleSearchStatus(
+    "Vehicle found",
+    false,
+    true
+  );
+
+}
+
+
+/*
+ * ============================================================
+ * OPEN SEARCHED VEHICLE HISTORY
+ * ============================================================
+ */
+
+function openSearchedVehicleHistory() {
+
+  if (
+    !searchedVehicle ||
+    !searchedVehicle.vin
+  ) {
+
+    return;
+
+  }
+
+
+  const url =
+    withAccessToken(
+      API_URL +
+      "?action=history" +
+      "&vin=" +
+      encodeURIComponent(
+        searchedVehicle.vin
+      ) +
+      "&view=page"
+    );
+
+
+  window.open(
+    url,
+    "_blank"
+  );
+
+}
+
+
+/*
+ * ============================================================
+ * SEARCH STATUS
+ * ============================================================
+ */
+
+function setVehicleSearchStatus(
+  message,
+  isError = false,
+  isSuccess = false
+) {
+
+  const element =
+    document.getElementById(
+      "vehicleSearchStatus"
+    );
+
+
+  element.textContent =
+    message;
+
+
+  element.style.color =
+    isError
+
+      ? "#b91c1c"
+
+      : isSuccess
+
+        ? "#15803d"
+
+        : "#475569";
+
+}
+
+
+/*
+ * ============================================================
+ * PREVENT OLD VEHICLE AFTER BACK NAVIGATION
+ * ============================================================
+ */
+
+window.addEventListener(
+  "pageshow",
+  function(event) {
+
+    if (event.persisted) {
+
+      window.location.reload();
+
+    }
+
+  }
+);
+
 </script>
+
 </body>
+
 </html>
