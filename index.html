@@ -940,6 +940,111 @@ function withAccessToken(url) {
 }
 
 
+const bridgeRequests = {};
+
+window.addEventListener("message", function(event) {
+  const data = event.data;
+
+  if (
+    !data ||
+    data.source !== "usave-apps-script-bridge" ||
+    !data.requestId
+  ) {
+    return;
+  }
+
+  const pending = bridgeRequests[data.requestId];
+
+  if (!pending) {
+    return;
+  }
+
+  clearTimeout(pending.timeout);
+
+  if (pending.iframe && pending.iframe.parentNode) {
+    pending.iframe.parentNode.removeChild(pending.iframe);
+  }
+
+  delete bridgeRequests[data.requestId];
+
+  pending.onResponse(data.payload || {
+    success: false,
+    error: "Empty response from service."
+  });
+});
+
+function appsScriptBridgeRequest(op, params, onResponse, onTransportError) {
+  const requestId =
+    "req_" +
+    Date.now() +
+    "_" +
+    Math.random().toString(36).slice(2);
+
+  const iframe = document.createElement("iframe");
+
+  iframe.style.display = "none";
+  iframe.setAttribute("aria-hidden", "true");
+
+  const query = new URLSearchParams();
+
+  query.set("action", "bridge");
+  query.set("op", op);
+  query.set("requestId", requestId);
+  query.set("_", String(Date.now()));
+
+  Object.keys(params || {}).forEach(function(key) {
+    const value = params[key];
+
+    if (
+      value !== undefined &&
+      value !== null
+    ) {
+      query.set(key, String(value));
+    }
+  });
+
+  const timeout = setTimeout(function() {
+    if (iframe.parentNode) {
+      iframe.parentNode.removeChild(iframe);
+    }
+
+    delete bridgeRequests[requestId];
+
+    if (onTransportError) {
+      onTransportError("Service request timed out.");
+    }
+  }, 15000);
+
+  bridgeRequests[requestId] = {
+    iframe: iframe,
+    timeout: timeout,
+    onResponse: onResponse
+  };
+
+  iframe.onerror = function() {
+    clearTimeout(timeout);
+
+    if (iframe.parentNode) {
+      iframe.parentNode.removeChild(iframe);
+    }
+
+    delete bridgeRequests[requestId];
+
+    if (onTransportError) {
+      onTransportError("Could not reach service.");
+    }
+  };
+
+  iframe.src =
+    API_URL +
+    "?" +
+    query.toString();
+
+  document.body.appendChild(iframe);
+}
+
+
+
 let scannerStarted = false;
 
 let lastCandidate = "";
@@ -1358,35 +1463,12 @@ function lookupVehicleDatabase(vin) {
   const requestNumber =
     lookupRequestNumber;
 
-
-  const callbackName =
-    "vehicleLookupCallback_" +
-    Date.now() +
-    "_" +
-    requestNumber;
-
-
-  let script =
-    document.createElement(
-      "script"
-    );
-
-
-  let timeout;
-
-
-  window[callbackName] =
+  appsScriptBridgeRequest(
+    "vehicle",
+    {
+      vin: vin
+    },
     function(response) {
-
-      clearTimeout(timeout);
-
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-
-
-      delete window[callbackName];
-
 
       if (
         requestNumber !==
@@ -1394,7 +1476,6 @@ function lookupVehicleDatabase(vin) {
       ) {
         return;
       }
-
 
       if (
         !response ||
@@ -1407,16 +1488,13 @@ function lookupVehicleDatabase(vin) {
             ? response.error
             : "Database lookup failed";
 
-
         setStatus(
           message,
           true
         );
 
         return;
-
       }
-
 
       if (
         response.found &&
@@ -1427,9 +1505,7 @@ function lookupVehicleDatabase(vin) {
           response.vehicle
         );
 
-      }
-
-      else {
+      } else {
 
         decodeNewVehicleVIN(
           vin
@@ -1437,22 +1513,8 @@ function lookupVehicleDatabase(vin) {
 
       }
 
-    };
-
-
-  script.onerror =
-    function() {
-
-      clearTimeout(timeout);
-
-
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-
-
-      delete window[callbackName];
-
+    },
+    function(message) {
 
       if (
         requestNumber !==
@@ -1461,58 +1523,12 @@ function lookupVehicleDatabase(vin) {
         return;
       }
 
-
       setStatus(
-        "Could not reach vehicle database.",
+        message || "Could not reach vehicle database.",
         true
       );
 
-    };
-
-
-  timeout =
-    setTimeout(
-      function() {
-
-        if (script.parentNode) {
-          script.parentNode.removeChild(script);
-        }
-
-
-        delete window[callbackName];
-
-
-        if (
-          requestNumber !==
-          lookupRequestNumber
-        ) {
-          return;
-        }
-
-
-        setStatus(
-          "Vehicle database lookup timed out.",
-          true
-        );
-
-      },
-      12000
-    );
-
-
-  script.src =
-    withAccessToken(
-    API_URL +
-    "?action=vehicle" +
-    "&vin=" +
-    encodeURIComponent(vin) +
-    "&callback=" +
-    encodeURIComponent(callbackName)
-  );
-
-
-  document.body.appendChild(
-    script
+    }
   );
 
 }
@@ -2826,7 +2842,6 @@ function searchVehicleDatabase() {
       .trim()
       .toUpperCase();
 
-
   if (!query) {
 
     setVehicleSearchStatus(
@@ -2835,62 +2850,25 @@ function searchVehicleDatabase() {
     );
 
     return;
-
   }
 
-
   searchedVehicle = null;
-
 
   document.getElementById(
     "vehicleSearchResult"
   ).style.display =
     "none";
 
-
   setVehicleSearchStatus(
     "Searching..."
   );
 
-
-  const callbackName =
-    "vehicleSearchCallback_" +
-    Date.now();
-
-
-  const script =
-    document.createElement(
-      "script"
-    );
-
-
-  let timeout;
-
-
-  window[callbackName] =
+  appsScriptBridgeRequest(
+    "searchvehicle",
+    {
+      query: query
+    },
     function(response) {
-
-      clearTimeout(
-        timeout
-      );
-
-
-      if (
-        script.parentNode
-      ) {
-
-        script.parentNode
-          .removeChild(
-            script
-          );
-
-      }
-
-
-      delete window[
-        callbackName
-      ];
-
 
       if (
         !response ||
@@ -2900,18 +2878,13 @@ function searchVehicleDatabase() {
         setVehicleSearchStatus(
           response &&
           response.error
-
             ? response.error
-
             : "Vehicle search failed.",
-
           true
         );
 
         return;
-
       }
-
 
       if (
         !response.found ||
@@ -2924,98 +2897,21 @@ function searchVehicleDatabase() {
         );
 
         return;
-
       }
-
 
       displayVehicleSearchResult(
         response.vehicle
       );
 
-    };
-
-
-  script.onerror =
-    function() {
-
-      clearTimeout(
-        timeout
-      );
-
-
-      if (
-        script.parentNode
-      ) {
-
-        script.parentNode
-          .removeChild(
-            script
-          );
-
-      }
-
-
-      delete window[
-        callbackName
-      ];
-
+    },
+    function(message) {
 
       setVehicleSearchStatus(
-        "Could not reach vehicle database.",
+        message || "Could not reach vehicle database.",
         true
       );
 
-    };
-
-
-  timeout =
-    setTimeout(
-      function() {
-
-        if (
-          script.parentNode
-        ) {
-
-          script.parentNode
-            .removeChild(
-              script
-            );
-
-        }
-
-
-        delete window[
-          callbackName
-        ];
-
-
-        setVehicleSearchStatus(
-          "Vehicle search timed out.",
-          true
-        );
-
-      },
-      12000
-    );
-
-
-  script.src =
-    withAccessToken(
-    API_URL +
-    "?action=searchvehicle" +
-    "&query=" +
-    encodeURIComponent(
-      query
-    ) +
-    "&callback=" +
-    encodeURIComponent(
-      callbackName
-    )
-  );
-
-
-  document.body.appendChild(
-    script
+    }
   );
 
 }
