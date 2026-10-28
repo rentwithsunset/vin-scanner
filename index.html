@@ -411,7 +411,7 @@
 <button
   class="manual"
   type="button"
-  onclick="openInvoiceLookup()"
+  onclick="window.open('admin.html?view=invoices','_blank')"
 >
   INVOICE LOOKUP
 </button>
@@ -419,7 +419,7 @@
 <button
   class="manual"
   type="button"
-  onclick="openBillingBatches()"
+  onclick="window.open('admin.html?view=batches','_blank')"
 >
   BILLING BATCHES
 </button>
@@ -3218,29 +3218,6 @@ function setVehicleSearchStatus(
         ? "#15803d"
 
         : "#475569";
-
-}
-
-
-
-function openInvoiceLookup() {
-
-  window.open(
-    API_URL +
-      "?action=invoicelookup",
-    "_blank"
-  );
-
-}
-
-
-function openBillingBatches() {
-
-  window.open(
-    API_URL +
-      "?action=batches",
-    "_blank"
-  );
 
 }
 
