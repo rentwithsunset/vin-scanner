@@ -1072,259 +1072,6 @@ function appsScriptBridgeRequest(op, params, onResponse, onTransportError) {
 
 
 
-
-/*
- * ============================================================
- * VEHICLE DATABASE JSONP
- * ============================================================
- *
- * Uses fixed global callback names for maximum compatibility
- * with Google Apps Script ContentService.
- */
-
-let vinLookupScript = null;
-let vinLookupTimeout = null;
-let vinLookupResponseHandler = null;
-let vinLookupErrorHandler = null;
-
-let vehicleSearchScript = null;
-let vehicleSearchTimeout = null;
-let vehicleSearchResponseHandler = null;
-let vehicleSearchErrorHandler = null;
-
-
-function cleanupVinLookupJsonp() {
-
-  if (vinLookupTimeout) {
-    clearTimeout(vinLookupTimeout);
-    vinLookupTimeout = null;
-  }
-
-  if (
-    vinLookupScript &&
-    vinLookupScript.parentNode
-  ) {
-    vinLookupScript.parentNode.removeChild(vinLookupScript);
-  }
-
-  vinLookupScript = null;
-}
-
-
-function cleanupVehicleSearchJsonp() {
-
-  if (vehicleSearchTimeout) {
-    clearTimeout(vehicleSearchTimeout);
-    vehicleSearchTimeout = null;
-  }
-
-  if (
-    vehicleSearchScript &&
-    vehicleSearchScript.parentNode
-  ) {
-    vehicleSearchScript.parentNode.removeChild(vehicleSearchScript);
-  }
-
-  vehicleSearchScript = null;
-}
-
-
-window.handleVinLookupResponse = function(response) {
-
-  const handler =
-    vinLookupResponseHandler;
-
-  cleanupVinLookupJsonp();
-
-  vinLookupResponseHandler = null;
-  vinLookupErrorHandler = null;
-
-  if (handler) {
-    handler(response);
-  }
-
-};
-
-
-window.handleVehicleSearchResponse = function(response) {
-
-  const handler =
-    vehicleSearchResponseHandler;
-
-  cleanupVehicleSearchJsonp();
-
-  vehicleSearchResponseHandler = null;
-  vehicleSearchErrorHandler = null;
-
-  if (handler) {
-    handler(response);
-  }
-
-};
-
-
-function requestVinLookupJsonp(
-  vin,
-  onResponse,
-  onError
-) {
-
-  cleanupVinLookupJsonp();
-
-  vinLookupResponseHandler =
-    onResponse;
-
-  vinLookupErrorHandler =
-    onError;
-
-
-  vinLookupScript =
-    document.createElement(
-      "script"
-    );
-
-
-  vinLookupScript.onerror =
-    function() {
-
-      const handler =
-        vinLookupErrorHandler;
-
-      cleanupVinLookupJsonp();
-
-      vinLookupResponseHandler = null;
-      vinLookupErrorHandler = null;
-
-      if (handler) {
-        handler(
-          "Could not reach vehicle database."
-        );
-      }
-
-    };
-
-
-  vinLookupTimeout =
-    setTimeout(
-      function() {
-
-        const handler =
-          vinLookupErrorHandler;
-
-        cleanupVinLookupJsonp();
-
-        vinLookupResponseHandler = null;
-        vinLookupErrorHandler = null;
-
-        if (handler) {
-          handler(
-            "Vehicle database request timed out."
-          );
-        }
-
-      },
-      15000
-    );
-
-
-  vinLookupScript.src =
-    API_URL +
-    "?action=vehicle" +
-    "&vin=" +
-    encodeURIComponent(vin) +
-    "&callback=handleVinLookupResponse" +
-    "&_=" +
-    Date.now();
-
-
-  document.body.appendChild(
-    vinLookupScript
-  );
-
-}
-
-
-function requestVehicleSearchJsonp(
-  query,
-  onResponse,
-  onError
-) {
-
-  cleanupVehicleSearchJsonp();
-
-  vehicleSearchResponseHandler =
-    onResponse;
-
-  vehicleSearchErrorHandler =
-    onError;
-
-
-  vehicleSearchScript =
-    document.createElement(
-      "script"
-    );
-
-
-  vehicleSearchScript.onerror =
-    function() {
-
-      const handler =
-        vehicleSearchErrorHandler;
-
-      cleanupVehicleSearchJsonp();
-
-      vehicleSearchResponseHandler = null;
-      vehicleSearchErrorHandler = null;
-
-      if (handler) {
-        handler(
-          "Could not reach vehicle database."
-        );
-      }
-
-    };
-
-
-  vehicleSearchTimeout =
-    setTimeout(
-      function() {
-
-        const handler =
-          vehicleSearchErrorHandler;
-
-        cleanupVehicleSearchJsonp();
-
-        vehicleSearchResponseHandler = null;
-        vehicleSearchErrorHandler = null;
-
-        if (handler) {
-          handler(
-            "Vehicle database request timed out."
-          );
-        }
-
-      },
-      15000
-    );
-
-
-  vehicleSearchScript.src =
-    API_URL +
-    "?action=searchvehicle" +
-    "&query=" +
-    encodeURIComponent(query) +
-    "&callback=handleVehicleSearchResponse" +
-    "&_=" +
-    Date.now();
-
-
-  document.body.appendChild(
-    vehicleSearchScript
-  );
-
-}
-
-
 let scannerStarted = false;
 
 let lastCandidate = "";
@@ -1743,9 +1490,11 @@ function lookupVehicleDatabase(vin) {
   const requestNumber =
     lookupRequestNumber;
 
-
-  requestVinLookupJsonp(
-    vin,
+  appsScriptBridgeRequest(
+    "vehicle",
+    {
+      vin: vin
+    },
     function(response) {
 
       if (
@@ -1755,23 +1504,24 @@ function lookupVehicleDatabase(vin) {
         return;
       }
 
-
       if (
         !response ||
         response.success !== true
       ) {
 
-        setStatus(
+        const message =
           response &&
           response.error
             ? response.error
-            : "Database lookup failed",
+            : "Database lookup failed";
+
+        setStatus(
+          message,
           true
         );
 
         return;
       }
-
 
       if (
         response.found &&
@@ -1782,9 +1532,7 @@ function lookupVehicleDatabase(vin) {
           response.vehicle
         );
 
-      }
-
-      else {
+      } else {
 
         decodeNewVehicleVIN(
           vin
@@ -1802,10 +1550,8 @@ function lookupVehicleDatabase(vin) {
         return;
       }
 
-
       setStatus(
-        message ||
-        "Could not reach vehicle database.",
+        message || "Could not reach vehicle database.",
         true
       );
 
@@ -3198,7 +2944,6 @@ function searchVehicleDatabase() {
       .trim()
       .toUpperCase();
 
-
   if (!query) {
 
     setVehicleSearchStatus(
@@ -3209,24 +2954,22 @@ function searchVehicleDatabase() {
     return;
   }
 
-
-  searchedVehicle =
-    null;
-
+  searchedVehicle = null;
 
   document.getElementById(
     "vehicleSearchResult"
   ).style.display =
     "none";
 
-
   setVehicleSearchStatus(
     "Searching..."
   );
 
-
-  requestVehicleSearchJsonp(
-    query,
+  appsScriptBridgeRequest(
+    "searchvehicle",
+    {
+      query: query
+    },
     function(response) {
 
       if (
@@ -3245,7 +2988,6 @@ function searchVehicleDatabase() {
         return;
       }
 
-
       if (
         !response.found ||
         !response.vehicle
@@ -3259,7 +3001,6 @@ function searchVehicleDatabase() {
         return;
       }
 
-
       displayVehicleSearchResult(
         response.vehicle
       );
@@ -3268,8 +3009,7 @@ function searchVehicleDatabase() {
     function(message) {
 
       setVehicleSearchStatus(
-        message ||
-        "Could not reach vehicle database.",
+        message || "Could not reach vehicle database.",
         true
       );
 
