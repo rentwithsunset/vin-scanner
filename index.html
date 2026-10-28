@@ -408,6 +408,22 @@
   VEHICLE LOOKUP
 </button>
 
+<button
+  class="manual"
+  type="button"
+  onclick="openInvoiceLookup()"
+>
+  INVOICE LOOKUP
+</button>
+
+<button
+  class="manual"
+  type="button"
+  onclick="openBillingBatches()"
+>
+  BILLING BATCHES
+</button>
+
 <!-- VEHICLE LOOKUP -->
 
 <div
@@ -3202,6 +3218,29 @@ function setVehicleSearchStatus(
         ? "#15803d"
 
         : "#475569";
+
+}
+
+
+
+function openInvoiceLookup() {
+
+  window.open(
+    API_URL +
+      "?action=invoicelookup",
+    "_blank"
+  );
+
+}
+
+
+function openBillingBatches() {
+
+  window.open(
+    API_URL +
+      "?action=batches",
+    "_blank"
+  );
 
 }
 
