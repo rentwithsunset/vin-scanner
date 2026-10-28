@@ -1070,6 +1070,200 @@ function appsScriptBridgeRequest(op, params, onResponse, onTransportError) {
   document.body.appendChild(iframe);
 }
 
+/*
+ * ============================================================
+ * DIRECT JSONP REQUEST
+ * ============================================================
+ *
+ * Vehicle database reads use the normal Apps Script JSONP
+ * endpoints instead of the iframe/postMessage bridge.
+ */
+
+function appsScriptJsonpRequest(
+  action,
+  params,
+  onResponse,
+  onTransportError
+) {
+
+  const callbackName =
+    "__usaveJsonp_" +
+    Date.now() +
+    "_" +
+    Math.random()
+      .toString(36)
+      .slice(2);
+
+  const script =
+    document.createElement(
+      "script"
+    );
+
+  const query =
+    new URLSearchParams();
+
+  query.set(
+    "action",
+    action
+  );
+
+  Object.keys(
+    params || {}
+  ).forEach(
+    function(key) {
+
+      const value =
+        params[key];
+
+      if (
+        value !== undefined &&
+        value !== null
+      ) {
+
+        query.set(
+          key,
+          String(value)
+        );
+
+      }
+
+    }
+  );
+
+  query.set(
+    "callback",
+    callbackName
+  );
+
+  query.set(
+    "_",
+    String(
+      Date.now()
+    )
+  );
+
+
+  let finished =
+    false;
+
+
+  const cleanup =
+    function() {
+
+      if (finished) {
+        return;
+      }
+
+      finished =
+        true;
+
+      clearTimeout(
+        timeout
+      );
+
+      if (
+        script.parentNode
+      ) {
+
+        script.parentNode
+          .removeChild(
+            script
+          );
+
+      }
+
+      try {
+
+        delete window[
+          callbackName
+        ];
+
+      }
+
+      catch (error) {
+
+        window[
+          callbackName
+        ] = undefined;
+
+      }
+
+    };
+
+
+  window[
+    callbackName
+  ] =
+    function(response) {
+
+      cleanup();
+
+      if (
+        onResponse
+      ) {
+
+        onResponse(
+          response
+        );
+
+      }
+
+    };
+
+
+  script.onerror =
+    function() {
+
+      cleanup();
+
+      if (
+        onTransportError
+      ) {
+
+        onTransportError(
+          "Could not reach vehicle database."
+        );
+
+      }
+
+    };
+
+
+  const timeout =
+    setTimeout(
+      function() {
+
+        cleanup();
+
+        if (
+          onTransportError
+        ) {
+
+          onTransportError(
+            "Vehicle database request timed out."
+          );
+
+        }
+
+      },
+      15000
+    );
+
+
+  script.src =
+    API_URL +
+    "?" +
+    query.toString();
+
+
+  document.body
+    .appendChild(
+      script
+    );
+
+}
+
+
 
 
 let scannerStarted = false;
@@ -1490,7 +1684,8 @@ function lookupVehicleDatabase(vin) {
   const requestNumber =
     lookupRequestNumber;
 
-  appsScriptBridgeRequest(
+
+  appsScriptJsonpRequest(
     "vehicle",
     {
       vin: vin
@@ -1503,6 +1698,7 @@ function lookupVehicleDatabase(vin) {
       ) {
         return;
       }
+
 
       if (
         !response ||
@@ -1523,6 +1719,7 @@ function lookupVehicleDatabase(vin) {
         return;
       }
 
+
       if (
         response.found &&
         response.vehicle
@@ -1532,7 +1729,9 @@ function lookupVehicleDatabase(vin) {
           response.vehicle
         );
 
-      } else {
+      }
+
+      else {
 
         decodeNewVehicleVIN(
           vin
@@ -1550,8 +1749,10 @@ function lookupVehicleDatabase(vin) {
         return;
       }
 
+
       setStatus(
-        message || "Could not reach vehicle database.",
+        message ||
+        "Could not reach vehicle database.",
         true
       );
 
@@ -2944,6 +3145,7 @@ function searchVehicleDatabase() {
       .trim()
       .toUpperCase();
 
+
   if (!query) {
 
     setVehicleSearchStatus(
@@ -2954,18 +3156,23 @@ function searchVehicleDatabase() {
     return;
   }
 
-  searchedVehicle = null;
+
+  searchedVehicle =
+    null;
+
 
   document.getElementById(
     "vehicleSearchResult"
   ).style.display =
     "none";
 
+
   setVehicleSearchStatus(
     "Searching..."
   );
 
-  appsScriptBridgeRequest(
+
+  appsScriptJsonpRequest(
     "searchvehicle",
     {
       query: query
@@ -2988,6 +3195,7 @@ function searchVehicleDatabase() {
         return;
       }
 
+
       if (
         !response.found ||
         !response.vehicle
@@ -3001,6 +3209,7 @@ function searchVehicleDatabase() {
         return;
       }
 
+
       displayVehicleSearchResult(
         response.vehicle
       );
@@ -3009,7 +3218,8 @@ function searchVehicleDatabase() {
     function(message) {
 
       setVehicleSearchStatus(
-        message || "Could not reach vehicle database.",
+        message ||
+        "Could not reach vehicle database.",
         true
       );
 
