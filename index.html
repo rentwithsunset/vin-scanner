@@ -876,9 +876,17 @@
 
 <!-- Hidden form used to send data to Apps Script -->
 
+<iframe
+  id="serviceSubmitFrame"
+  name="serviceSubmitFrame"
+  title="Service save response"
+  style="display:none;"
+></iframe>
+
 <form
   id="serviceForm"
   method="POST"
+  target="serviceSubmitFrame"
   action="https://script.google.com/macros/s/AKfycbxe8iGhBAEjjLeyWEj_ws2-oEAlol9qmylOaL_WbLFRC3lr1iNsNiQ21JOPzM90106y/exec"
   style="display:none;"
 >
@@ -1077,6 +1085,401 @@ function appsScriptBridgeRequest(op, params, onResponse, onTransportError) {
 
   document.body.appendChild(iframe);
 }
+
+/*
+ * ============================================================
+ * BACKGROUND SERVICE SAVE
+ * ============================================================
+ */
+
+let serviceSaveTimer = null;
+let lastSavedService = null;
+
+
+window.addEventListener(
+  "message",
+  function(event) {
+
+    const data =
+      event.data;
+
+
+    if (
+      !data ||
+      data.source !==
+        "usave-service-save"
+    ) {
+      return;
+    }
+
+
+    if (serviceSaveTimer) {
+      clearTimeout(
+        serviceSaveTimer
+      );
+      serviceSaveTimer = null;
+    }
+
+
+    const button =
+      document.getElementById(
+        "completeButton"
+      );
+
+
+    button.textContent =
+      "COMPLETE OIL CHANGE";
+
+
+    if (
+      data.success !== true
+    ) {
+
+      button.disabled = false;
+
+      setStatus(
+        data.error ||
+        "Service could not be saved.",
+        true
+      );
+
+      return;
+    }
+
+
+    lastSavedService =
+      data.result || {};
+
+
+    showServiceSaved(
+      lastSavedService
+    );
+
+  }
+);
+
+
+function ensureServiceSavedOverlay() {
+
+  let overlay =
+    document.getElementById(
+      "serviceSavedOverlay"
+    );
+
+
+  if (overlay) {
+    return overlay;
+  }
+
+
+  overlay =
+    document.createElement(
+      "div"
+    );
+
+
+  overlay.id =
+    "serviceSavedOverlay";
+
+
+  overlay.style.cssText =
+    "display:none;position:fixed;inset:0;z-index:100000;" +
+    "background:#f4f6f8;overflow:auto;padding:22px;";
+
+
+  overlay.innerHTML =
+    '<div style="' +
+      'max-width:500px;margin:auto;background:white;padding:28px;' +
+      'border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.08);' +
+      'text-align:center;' +
+    '">' +
+
+      '<div style="' +
+        'width:70px;height:70px;margin:auto;border-radius:50%;' +
+        'background:#15803d;color:white;font-size:45px;line-height:70px;' +
+      '">✓</div>' +
+
+      '<h1 style="color:#15803d;margin-bottom:20px;">Service Saved</h1>' +
+
+      '<div id="savedVehicle" style="font-size:21px;font-weight:bold;"></div>' +
+
+      '<div id="savedDetails" style="' +
+        'display:none;margin-top:6px;color:#475569;' +
+      '"></div>' +
+
+      '<div id="savedPlate" style="' +
+        'margin-top:16px;font-size:18px;font-weight:bold;' +
+      '"></div>' +
+
+      '<div id="savedUnit" style="margin-top:7px;"></div>' +
+
+      '<div id="savedVin" style="' +
+        'margin-top:7px;color:#64748b;overflow-wrap:anywhere;' +
+      '"></div>' +
+
+      '<div id="savedMileage" style="margin-top:10px;"></div>' +
+
+      '<div id="savedInvoice" style="margin-top:22px;color:#475569;"></div>' +
+
+      '<div id="savedAmount" style="' +
+        'font-size:32px;font-weight:bold;margin-top:8px;' +
+      '"></div>' +
+
+      '<div id="savedCount" style="margin-top:10px;color:#64748b;"></div>' +
+
+      '<button id="savedPrintButton" type="button" style="' +
+        'width:100%;margin-top:25px;padding:17px;border:0;border-radius:10px;' +
+        'background:#0f172a;color:white;font-size:18px;font-weight:bold;' +
+        'cursor:pointer;' +
+      '">VIEW / PRINT INVOICE</button>' +
+
+      '<button id="savedNextButton" type="button" style="' +
+        'width:100%;margin-top:12px;padding:17px;border:0;border-radius:10px;' +
+        'background:#15803d;color:white;font-size:18px;font-weight:bold;' +
+        'cursor:pointer;' +
+      '">NEXT VEHICLE</button>' +
+
+    '</div>';
+
+
+  document.body.appendChild(
+    overlay
+  );
+
+
+  document.getElementById(
+    "savedPrintButton"
+  ).addEventListener(
+    "click",
+    function() {
+
+      if (
+        !lastSavedService ||
+        !lastSavedService.invoice
+      ) {
+        return;
+      }
+
+
+      const invoiceUrl =
+        API_URL +
+        "?action=invoice" +
+        "&invoice=" +
+        encodeURIComponent(
+          lastSavedService.invoice
+        );
+
+
+      window.open(
+        invoiceUrl,
+        "_blank"
+      );
+
+    }
+  );
+
+
+  document.getElementById(
+    "savedNextButton"
+  ).addEventListener(
+    "click",
+    nextVehicleAfterSave
+  );
+
+
+  return overlay;
+
+}
+
+
+function showServiceSaved(
+  result
+) {
+
+  const overlay =
+    ensureServiceSavedOverlay();
+
+
+  document.getElementById(
+    "savedVehicle"
+  ).textContent =
+    result.vehicle || "";
+
+
+  const details =
+    document.getElementById(
+      "savedDetails"
+    );
+
+
+  details.textContent =
+    result.vehicleDetails || "";
+
+
+  details.style.display =
+    result.vehicleDetails
+      ? "block"
+      : "none";
+
+
+  document.getElementById(
+    "savedPlate"
+  ).textContent =
+    "Plate: " +
+    (
+      result.plate || "—"
+    );
+
+
+  document.getElementById(
+    "savedUnit"
+  ).textContent =
+    "Unit #: " +
+    (
+      result.unitNumber || "—"
+    );
+
+
+  document.getElementById(
+    "savedVin"
+  ).textContent =
+    result.vin || "";
+
+
+  document.getElementById(
+    "savedMileage"
+  ).textContent =
+    "Mileage: " +
+    (
+      Number(
+        result.mileage || 0
+      )
+        .toLocaleString()
+    );
+
+
+  document.getElementById(
+    "savedInvoice"
+  ).textContent =
+    "Invoice " +
+    (
+      result.invoice || ""
+    );
+
+
+  document.getElementById(
+    "savedAmount"
+  ).textContent =
+    "$" +
+    Number(
+      result.amount || 0
+    )
+      .toFixed(2);
+
+
+  document.getElementById(
+    "savedCount"
+  ).textContent =
+    "Vehicle Service Count: " +
+    Number(
+      result.serviceCount || 0
+    );
+
+
+  overlay.style.display =
+    "block";
+
+
+  window.scrollTo(
+    0,
+    0
+  );
+
+}
+
+
+function nextVehicleAfterSave() {
+
+  stopScanner(
+    false
+  );
+
+
+  const overlay =
+    document.getElementById(
+      "serviceSavedOverlay"
+    );
+
+
+  if (overlay) {
+    overlay.style.display =
+      "none";
+  }
+
+
+  lastSavedService =
+    null;
+
+
+  document.getElementById(
+    "vin"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "notes"
+  ).value =
+    "";
+
+
+  resetVehicleResult();
+
+
+  const lookupBox =
+    document.getElementById(
+      "vehicleLookupBox"
+    );
+
+
+  if (lookupBox) {
+    lookupBox.style.display =
+      "none";
+  }
+
+
+  const searchInput =
+    document.getElementById(
+      "vehicleSearch"
+    );
+
+
+  if (searchInput) {
+    searchInput.value =
+      "";
+  }
+
+
+  document.getElementById(
+    "completeButton"
+  ).textContent =
+    "COMPLETE OIL CHANGE";
+
+
+  setStatus(
+    "Ready to scan"
+  );
+
+
+  window.scrollTo(
+    0,
+    0
+  );
+
+}
+
+
+
 
 
 
@@ -1348,17 +1751,57 @@ function stopScanner(
   changeStatus = true
 ) {
 
-  if (scannerStarted) {
-
-    try {
-      Quagga.stop();
-    }
-
-    catch (error) {
-      console.log(error);
-    }
-
+  try {
+    Quagga.stop();
   }
+
+  catch (error) {
+    console.log(error);
+  }
+
+
+  /*
+   * Explicitly release every active camera track.
+   * This prevents a stale stream from surviving
+   * between vehicles.
+   */
+
+  document
+    .querySelectorAll(
+      "#scanner video"
+    )
+    .forEach(
+      function(video) {
+
+        if (
+          video.srcObject &&
+          video.srcObject.getTracks
+        ) {
+
+          video.srcObject
+            .getTracks()
+            .forEach(
+              function(track) {
+
+                try {
+                  track.stop();
+                }
+
+                catch (error) {
+                  console.log(error);
+                }
+
+              }
+            );
+
+
+          video.srcObject =
+            null;
+
+        }
+
+      }
+    );
 
 
   scannerStarted = false;
@@ -2568,8 +3011,14 @@ function completeService() {
     "SAVING...";
 
 
+  setStatus(
+    "Saving service..."
+  );
+
+
   const payload = {
-vin:
+
+    vin:
       vehicleData.vin,
 
     year:
@@ -2606,6 +3055,37 @@ vin:
   ).value =
     JSON.stringify(
       payload
+    );
+
+
+  if (serviceSaveTimer) {
+    clearTimeout(
+      serviceSaveTimer
+    );
+  }
+
+
+  serviceSaveTimer =
+    setTimeout(
+      function() {
+
+        serviceSaveTimer =
+          null;
+
+        button.disabled =
+          false;
+
+        button.textContent =
+          "COMPLETE OIL CHANGE";
+
+
+        setStatus(
+          "Service save timed out. Check your connection before trying again.",
+          true
+        );
+
+      },
+      60000
     );
 
 
