@@ -408,6 +408,14 @@
   VEHICLE LOOKUP
 </button>
 
+<button
+  class="history-button"
+  type="button"
+  onclick="openAllHistory()"
+>
+  HISTORY
+</button>
+
 <!-- VEHICLE LOOKUP -->
 
 <div
@@ -2792,6 +2800,26 @@ function setStatus(
 
 }
   /*
+ * ============================================================
+ * ALL SERVICE HISTORY
+ * ============================================================
+ */
+
+function openAllHistory() {
+
+  const url =
+    API_URL +
+    "?action=allhistory";
+
+  window.open(
+    url,
+    "_blank"
+  );
+
+}
+
+
+/*
  * ============================================================
  * VEHICLE LOOKUP SCREEN
  * ============================================================
