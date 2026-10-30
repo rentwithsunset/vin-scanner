@@ -1066,8 +1066,7 @@
       id="savedInvoiceLink"
       class="service-confirmation-invoice-button"
       href="#"
-      target="_blank"
-      rel="noopener"
+      onclick="shareSavedInvoicePdf(event)"
     >
       VIEW / PRINT INVOICE
     </a>
@@ -1707,17 +1706,11 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
 
-  const autoPrintInvoice =
-    query.get(
-      "autoprint"
-    ) === "1";
-
-
   if (invoicePdf) {
 
     openInvoicePdfFromBrowser(
       invoicePdf,
-      autoPrintInvoice
+      false
     );
 
     return;
@@ -1747,6 +1740,389 @@ function withAccessToken(url) {
 
 let serviceSaveInProgress = false;
 let lastSavedService = null;
+
+let lastSavedInvoicePdfFile = null;
+let lastSavedInvoicePdfUrl = "";
+let lastSavedInvoicePdfLoading = false;
+let lastSavedInvoicePdfError = "";
+
+
+
+function base64ToPdfFile(
+  base64,
+  fileName
+) {
+
+  const binary =
+    atob(
+      base64
+    );
+
+
+  const bytes =
+    new Uint8Array(
+      binary.length
+    );
+
+
+  for (
+    let index = 0;
+    index < binary.length;
+    index++
+  ) {
+
+    bytes[index] =
+      binary.charCodeAt(
+        index
+      );
+
+  }
+
+
+  return new File(
+    [bytes],
+    fileName || "invoice.pdf",
+    {
+      type:
+        "application/pdf"
+    }
+  );
+
+}
+
+
+function preloadSavedInvoicePdf(
+  invoiceNumber
+) {
+
+  invoiceNumber =
+    String(
+      invoiceNumber || ""
+    ).trim();
+
+
+  lastSavedInvoicePdfFile =
+    null;
+
+  lastSavedInvoicePdfError =
+    "";
+
+  lastSavedInvoicePdfLoading =
+    false;
+
+
+  if (
+    lastSavedInvoicePdfUrl
+  ) {
+
+    try {
+      URL.revokeObjectURL(
+        lastSavedInvoicePdfUrl
+      );
+    }
+    catch (error) {}
+
+  }
+
+
+  lastSavedInvoicePdfUrl =
+    "";
+
+
+  if (!invoiceNumber) {
+    return;
+  }
+
+
+  const invoiceLink =
+    document.getElementById(
+      "savedInvoiceLink"
+    );
+
+
+  if (invoiceLink) {
+
+    invoiceLink.textContent =
+      "PREPARING PDF…";
+
+    invoiceLink.setAttribute(
+      "aria-disabled",
+      "true"
+    );
+
+  }
+
+
+  lastSavedInvoicePdfLoading =
+    true;
+
+
+  const callbackName =
+    "__savedInvoicePdf_" +
+    Date.now() +
+    "_" +
+    Math.random()
+      .toString(36)
+      .slice(2);
+
+
+  const script =
+    document.createElement(
+      "script"
+    );
+
+
+  const cleanup =
+    function() {
+
+      try {
+        delete window[
+          callbackName
+        ];
+      }
+      catch (error) {
+        window[
+          callbackName
+        ] = undefined;
+      }
+
+
+      try {
+        script.remove();
+      }
+      catch (error) {}
+
+    };
+
+
+  window[
+    callbackName
+  ] =
+    function(response) {
+
+      cleanup();
+
+
+      lastSavedInvoicePdfLoading =
+        false;
+
+
+      if (
+        !response ||
+        !response.success ||
+        !response.base64
+      ) {
+
+        lastSavedInvoicePdfError =
+          response &&
+          response.error
+            ? response.error
+            : "PDF could not be prepared.";
+
+      }
+
+      else {
+
+        try {
+
+          lastSavedInvoicePdfFile =
+            base64ToPdfFile(
+              response.base64,
+              response.fileName ||
+              (
+                invoiceNumber +
+                ".pdf"
+              )
+            );
+
+
+          lastSavedInvoicePdfUrl =
+            URL.createObjectURL(
+              lastSavedInvoicePdfFile
+            );
+
+        }
+
+        catch (error) {
+
+          lastSavedInvoicePdfError =
+            error &&
+            error.message
+              ? error.message
+              : String(error);
+
+        }
+
+      }
+
+
+      if (invoiceLink) {
+
+        invoiceLink.textContent =
+          "VIEW / PRINT INVOICE";
+
+        invoiceLink.removeAttribute(
+          "aria-disabled"
+        );
+
+      }
+
+    };
+
+
+  script.onerror =
+    function() {
+
+      cleanup();
+
+
+      lastSavedInvoicePdfLoading =
+        false;
+
+      lastSavedInvoicePdfError =
+        "Could not reach the PDF service.";
+
+
+      if (invoiceLink) {
+
+        invoiceLink.textContent =
+          "VIEW / PRINT INVOICE";
+
+        invoiceLink.removeAttribute(
+          "aria-disabled"
+        );
+
+      }
+
+    };
+
+
+  script.src =
+    API_URL +
+    "?action=invoicepdfdata" +
+    "&invoice=" +
+    encodeURIComponent(
+      invoiceNumber
+    ) +
+    "&callback=" +
+    encodeURIComponent(
+      callbackName
+    ) +
+    "&_=" +
+    Date.now();
+
+
+  document.head.appendChild(
+    script
+  );
+
+}
+
+
+async function shareSavedInvoicePdf(
+  event
+) {
+
+  if (event) {
+    event.preventDefault();
+  }
+
+
+  const invoiceNumber =
+    String(
+      lastSavedService &&
+      lastSavedService.invoice
+        ? lastSavedService.invoice
+        : ""
+    ).trim();
+
+
+  if (!invoiceNumber) {
+    return;
+  }
+
+
+  /*
+   * The PDF is preloaded immediately after saving.
+   * That lets navigator.share() run directly from
+   * this user tap, which iOS requires.
+   */
+
+  if (
+    lastSavedInvoicePdfFile &&
+    navigator.share &&
+    navigator.canShare &&
+    navigator.canShare({
+      files: [
+        lastSavedInvoicePdfFile
+      ]
+    })
+  ) {
+
+    try {
+
+      await navigator.share({
+        files: [
+          lastSavedInvoicePdfFile
+        ]
+      });
+
+
+      return;
+
+    }
+
+    catch (error) {
+
+      /*
+       * AbortError means the user simply closed the
+       * iOS share sheet. Do not force another page.
+       */
+
+      if (
+        error &&
+        error.name ===
+        "AbortError"
+      ) {
+        return;
+      }
+
+    }
+
+  }
+
+
+  /*
+   * If the native share sheet cannot accept a PDF
+   * file, open the exact same real PDF normally.
+   */
+
+  if (
+    lastSavedInvoicePdfUrl
+  ) {
+
+    window.location.href =
+      lastSavedInvoicePdfUrl;
+
+    return;
+
+  }
+
+
+  /*
+   * PDF may still be preparing. Use the existing
+   * GitHub PDF route as the final fallback.
+   */
+
+  window.location.href =
+    window.location.origin +
+    window.location.pathname +
+    "?invoicepdf=" +
+    encodeURIComponent(
+      invoiceNumber
+    );
+
+}
 
 
 window.addEventListener(
@@ -1900,13 +2276,12 @@ function showServiceConfirmation(
 
 
   invoiceLink.href =
-    window.location.origin +
-    window.location.pathname +
-    "?invoicepdf=" +
-    encodeURIComponent(
-      result.invoice || ""
-    ) +
-    "&autoprint=1";
+    "#";
+
+
+  preloadSavedInvoicePdf(
+    result.invoice || ""
+  );
 
 
   const warning =
@@ -1952,6 +2327,35 @@ function showServiceConfirmation(
 
 
 function resetForNextVehicle() {
+
+  lastSavedInvoicePdfFile =
+    null;
+
+  lastSavedInvoicePdfError =
+    "";
+
+  lastSavedInvoicePdfLoading =
+    false;
+
+
+  if (
+    lastSavedInvoicePdfUrl
+  ) {
+
+    try {
+      URL.revokeObjectURL(
+        lastSavedInvoicePdfUrl
+      );
+    }
+    catch (error) {}
+
+  }
+
+
+  lastSavedInvoicePdfUrl =
+    "";
+
+
 
   stopScanner(false);
 
