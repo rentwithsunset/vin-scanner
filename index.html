@@ -1176,7 +1176,8 @@ function unlockApp() {
 
 
 function openInvoicePdfFromBrowser(
-  invoiceNumber
+  invoiceNumber,
+  autoPrint
 ) {
 
   invoiceNumber =
@@ -1382,9 +1383,249 @@ function openInvoicePdfFromBrowser(
         cleanup();
 
 
-        window.location.replace(
-          pdfUrl
-        );
+        if (autoPrint) {
+
+          document.body.innerHTML =
+            `
+            <div
+              style="
+                position:fixed;
+                inset:0;
+                background:#111827;
+              "
+            >
+
+              <iframe
+                id="invoicePrintFrame"
+                title="Invoice PDF"
+                style="
+                  position:absolute;
+                  inset:0;
+                  width:100%;
+                  height:100%;
+                  border:0;
+                  background:white;
+                "
+              ></iframe>
+
+
+              <div
+                id="invoicePrintFallback"
+                style="
+                  position:fixed;
+                  left:12px;
+                  right:12px;
+                  bottom:12px;
+                  display:none;
+                  gap:8px;
+                  padding:10px;
+                  border-radius:12px;
+                  background:rgba(15,23,42,.94);
+                  font-family:Arial,sans-serif;
+                  z-index:10;
+                "
+              >
+
+                <button
+                  id="manualPrintInvoice"
+                  type="button"
+                  style="
+                    flex:1;
+                    padding:12px;
+                    border:0;
+                    border-radius:8px;
+                    background:white;
+                    color:#0f172a;
+                    font-size:14px;
+                    font-weight:700;
+                  "
+                >
+                  PRINT INVOICE
+                </button>
+
+                <button
+                  id="openPdfNormally"
+                  type="button"
+                  style="
+                    flex:1;
+                    padding:12px;
+                    border:0;
+                    border-radius:8px;
+                    background:#334155;
+                    color:white;
+                    font-size:14px;
+                    font-weight:700;
+                  "
+                >
+                  OPEN PDF
+                </button>
+
+              </div>
+
+            </div>
+            `;
+
+
+          const frame =
+            document.getElementById(
+              "invoicePrintFrame"
+            );
+
+
+          const fallback =
+            document.getElementById(
+              "invoicePrintFallback"
+            );
+
+
+          const manualPrint =
+            document.getElementById(
+              "manualPrintInvoice"
+            );
+
+
+          const openNormally =
+            document.getElementById(
+              "openPdfNormally"
+            );
+
+
+          let printAttempted =
+            false;
+
+
+          const tryPrint =
+            function() {
+
+              if (printAttempted) {
+                return;
+              }
+
+
+              printAttempted =
+                true;
+
+
+              try {
+
+                frame.contentWindow.focus();
+
+
+                /*
+                 * Safari/WebKit is more reliable when the PDF
+                 * has had a moment to finish rendering before
+                 * print() is invoked.
+                 */
+
+                setTimeout(
+                  function() {
+
+                    try {
+
+                      frame.contentWindow.print();
+
+                    }
+
+                    catch (error) {
+
+                      try {
+                        window.print();
+                      }
+                      catch (ignored) {}
+
+                    }
+
+
+                    /*
+                     * If iOS refuses to open the print sheet,
+                     * keep obvious manual controls available.
+                     */
+
+                    setTimeout(
+                      function() {
+
+                        fallback.style.display =
+                          "flex";
+
+                      },
+                      900
+                    );
+
+                  },
+                  700
+                );
+
+              }
+
+              catch (error) {
+
+                fallback.style.display =
+                  "flex";
+
+              }
+
+            };
+
+
+          frame.onload =
+            tryPrint;
+
+
+          manualPrint.onclick =
+            function() {
+
+              try {
+
+                frame.contentWindow.focus();
+                frame.contentWindow.print();
+
+              }
+
+              catch (error) {
+
+                try {
+                  window.print();
+                }
+                catch (ignored) {}
+
+              }
+
+            };
+
+
+          openNormally.onclick =
+            function() {
+
+              window.location.replace(
+                pdfUrl
+              );
+
+            };
+
+
+          frame.src =
+            pdfUrl;
+
+
+          /*
+           * Backup in case Safari doesn't fire iframe.onload
+           * for its native PDF viewer.
+           */
+
+          setTimeout(
+            tryPrint,
+            1600
+          );
+
+        }
+
+        else {
+
+          window.location.replace(
+            pdfUrl
+          );
+
+        }
 
       }
 
@@ -1466,10 +1707,17 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
 
+  const autoPrintInvoice =
+    query.get(
+      "autoprint"
+    ) === "1";
+
+
   if (invoicePdf) {
 
     openInvoicePdfFromBrowser(
-      invoicePdf
+      invoicePdf,
+      autoPrintInvoice
     );
 
     return;
@@ -1657,7 +1905,8 @@ function showServiceConfirmation(
     "?invoicepdf=" +
     encodeURIComponent(
       result.invoice || ""
-    );
+    ) +
+    "&autoprint=1";
 
 
   const warning =
