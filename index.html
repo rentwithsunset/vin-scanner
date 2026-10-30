@@ -1174,7 +1174,309 @@ function unlockApp() {
   hideAccessLock();
 }
 
+
+function openInvoicePdfFromBrowser(
+  invoiceNumber
+) {
+
+  invoiceNumber =
+    String(
+      invoiceNumber || ""
+    ).trim();
+
+
+  if (!invoiceNumber) {
+    return;
+  }
+
+
+  document.body.innerHTML =
+    `
+    <div
+      style="
+        min-height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:24px;
+        font-family:Arial,sans-serif;
+        text-align:center;
+        background:#111827;
+        color:white;
+      "
+    >
+      Opening PDF…
+    </div>
+    `;
+
+
+  const callbackName =
+    "__invoicePdfCallback_" +
+    Date.now() +
+    "_" +
+    Math.random()
+      .toString(36)
+      .slice(2);
+
+
+  let finished = false;
+
+
+  const cleanup =
+    function() {
+
+      try {
+        delete window[
+          callbackName
+        ];
+      }
+      catch (error) {
+        window[
+          callbackName
+        ] = undefined;
+      }
+
+
+      const script =
+        document.getElementById(
+          "invoicePdfLoaderScript"
+        );
+
+
+      if (script) {
+        script.remove();
+      }
+
+    };
+
+
+  const showError =
+    function(message) {
+
+      cleanup();
+
+
+      document.body.innerHTML =
+        `
+        <div
+          style="
+            min-height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:24px;
+            font-family:Arial,sans-serif;
+            text-align:center;
+            background:#f3f4f6;
+            color:#111827;
+          "
+        >
+          <div>
+            <div
+              style="
+                font-size:20px;
+                font-weight:700;
+                margin-bottom:10px;
+              "
+            >
+              Could Not Open PDF
+            </div>
+
+            <div>
+              ${String(
+                message || "Unknown error."
+              ).replace(
+                /[&<>"']/g,
+                function(character) {
+                  return {
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#039;"
+                  }[character];
+                }
+              )}
+            </div>
+          </div>
+        </div>
+        `;
+
+    };
+
+
+  window[
+    callbackName
+  ] =
+    function(response) {
+
+      if (finished) {
+        return;
+      }
+
+
+      finished = true;
+
+
+      if (
+        !response ||
+        !response.success ||
+        !response.base64
+      ) {
+
+        showError(
+          response &&
+          response.error
+            ? response.error
+            : "PDF data was not returned."
+        );
+
+        return;
+      }
+
+
+      try {
+
+        const binary =
+          atob(
+            response.base64
+          );
+
+
+        const bytes =
+          new Uint8Array(
+            binary.length
+          );
+
+
+        for (
+          let index = 0;
+          index < binary.length;
+          index++
+        ) {
+
+          bytes[index] =
+            binary.charCodeAt(
+              index
+            );
+
+        }
+
+
+        const pdfBlob =
+          new Blob(
+            [bytes],
+            {
+              type:
+                "application/pdf"
+            }
+          );
+
+
+        const pdfUrl =
+          URL.createObjectURL(
+            pdfBlob
+          );
+
+
+        cleanup();
+
+
+        window.location.replace(
+          pdfUrl
+        );
+
+      }
+
+      catch (error) {
+
+        showError(
+          error &&
+          error.message
+            ? error.message
+            : String(error)
+        );
+
+      }
+
+    };
+
+
+  const script =
+    document.createElement(
+      "script"
+    );
+
+
+  script.id =
+    "invoicePdfLoaderScript";
+
+
+  script.src =
+    API_URL +
+    "?action=invoicepdfdata" +
+    "&invoice=" +
+    encodeURIComponent(
+      invoiceNumber
+    ) +
+    "&callback=" +
+    encodeURIComponent(
+      callbackName
+    ) +
+    "&_=" +
+    Date.now();
+
+
+  script.onerror =
+    function() {
+
+      if (finished) {
+        return;
+      }
+
+
+      finished = true;
+
+
+      showError(
+        "Could not reach the PDF service."
+      );
+
+    };
+
+
+  document.head.appendChild(
+    script
+  );
+
+}
+
+
 document.addEventListener("DOMContentLoaded", function () {
+
+  const query =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const invoicePdf =
+    query.get(
+      "invoicepdf"
+    );
+
+
+  if (invoicePdf) {
+
+    openInvoicePdfFromBrowser(
+      invoicePdf
+    );
+
+    return;
+
+  }
+
+
   const pinInput = document.getElementById("accessPin");
 
   pinInput.addEventListener("keydown", function (event) {
@@ -1350,8 +1652,9 @@ function showServiceConfirmation(
 
 
   invoiceLink.href =
-    API_URL +
-    "?action=invoicepdf&invoice=" +
+    window.location.origin +
+    window.location.pathname +
+    "?invoicepdf=" +
     encodeURIComponent(
       result.invoice || ""
     );
