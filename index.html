@@ -1047,6 +1047,16 @@
       COMPLETE OIL CHANGE
     </button>
 
+    <div id="saveRecoveryPanel" style="display:none;margin-top:13px;padding:14px;border:1px solid #d97706;border-radius:10px;background:#fffbeb;color:#713f12;">
+      <div style="font-weight:bold;">Service save needs verification</div>
+      <div id="saveRecoveryMessage" style="font-size:13px;line-height:1.45;margin-top:6px;"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <button type="button" onclick="checkPendingServiceStatus()" style="flex:1;min-width:135px;padding:10px;border:0;border-radius:8px;background:#0f172a;color:white;font-weight:bold;">CHECK SAVE STATUS</button>
+        <button type="button" onclick="retryPendingServiceSubmission()" style="flex:1;min-width:135px;padding:10px;border:0;border-radius:8px;background:#92400e;color:white;font-weight:bold;">RETRY SAME REQUEST</button>
+      </div>
+      <div style="font-size:12px;margin-top:8px;">Checking status does not create an invoice. Retrying uses the same submission ID, so the server cannot create a second invoice for it.</div>
+    </div>
+
   </div>
 
 </div>
@@ -1726,7 +1736,8 @@ function openInvoicePdfFromBrowser(
 
   script.src =
     API_URL +
-    (documentType === "batch" ? "?action=batchpdfdata&batch=" : "?action=invoicepdfdata&invoice=") +
+    (documentType === "batchinvoices" ? "?action=batchinvoicespdfdata&batch=" :
+      documentType === "batch" ? "?action=batchpdfdata&batch=" : "?action=invoicepdfdata&invoice=") +
     encodeURIComponent(
       invoiceNumber
     ) +
@@ -1771,6 +1782,12 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
 
+  const batchInvoices = query.get("batchinvoices");
+  if (batchInvoices) {
+    openInvoicePdfFromBrowser(batchInvoices, false, "batchinvoices");
+    return;
+  }
+
   const batchPdf = query.get("batchpdf");
   if (batchPdf) {
     openInvoicePdfFromBrowser(batchPdf, false, "batch");
@@ -1795,6 +1812,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 
+  // A completed service takes priority over a stale, restored form.
+  if (!restoreSavedServiceConfirmation()) {
+    restorePendingServiceSubmission();
+  }
+
   const pinInput = document.getElementById("accessPin");
 
   pinInput.addEventListener("keydown", function (event) {
@@ -1814,9 +1836,164 @@ function withAccessToken(url) {
   return url;
 }
 
+window.addEventListener('pageshow', function(event) {
+  if (event.persisted) {
+    if (!restoreSavedServiceConfirmation()) {
+      restorePendingServiceSubmission();
+    }
+  }
+});
+
 
 let serviceSaveInProgress = false;
 let lastSavedService = null;
+let pendingServiceSubmission = null;
+let serviceSaveTimeout = null;
+const SERVICE_SAVE_STORAGE_KEY = 'usave_pending_service_submission_v1';
+const LAST_SAVED_SERVICE_KEY = 'usave_last_saved_service_v1';
+
+function createServiceSubmissionId() {
+  if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return 'svc_' + window.crypto.randomUUID();
+  }
+  if (window.crypto && window.crypto.getRandomValues) {
+    const a = new Uint8Array(16);
+    window.crypto.getRandomValues(a);
+    return 'svc_' + Array.from(a).map(function(n) {
+      return n.toString(16).padStart(2, '0');
+    }).join('');
+  }
+  throw new Error('Secure random IDs unavailable. Open this app over HTTPS.');
+}
+
+function savePendingServiceAttempt(attempt) {
+  // Never send a save request unless we can recover its stable ID after reload.
+  try {
+    localStorage.setItem(SERVICE_SAVE_STORAGE_KEY, JSON.stringify(attempt));
+  } catch (error) {
+    throw new Error('Cannot safely store the submission ID on this device. Enable browser storage and retry. No invoice was submitted.');
+  }
+  pendingServiceSubmission = attempt;
+}
+
+function clearPendingServiceAttempt() {
+  pendingServiceSubmission = null;
+  serviceSaveInProgress = false;
+  if (serviceSaveTimeout) clearTimeout(serviceSaveTimeout);
+  serviceSaveTimeout = null;
+  try { localStorage.removeItem(SERVICE_SAVE_STORAGE_KEY); } catch (error) {}
+  const panel = document.getElementById('saveRecoveryPanel');
+  if (panel) panel.style.display = 'none';
+}
+
+function showSaveRecoveryPanel(message) {
+  const panel = document.getElementById('saveRecoveryPanel');
+  const text = document.getElementById('saveRecoveryMessage');
+  if (text) text.textContent = message || 'The previous save has not been confirmed yet.';
+  if (panel) panel.style.display = 'block';
+  const button = document.getElementById('completeButton');
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'SAVE STATUS UNKNOWN';
+  }
+  setStatus('Check the previous save before creating another invoice.', true);
+}
+
+function finishServiceSave(result) {
+  // Save a completed marker for iOS Back/reload/BFCache restoration.
+  // NEXT VEHICLE is the explicit boundary that clears it.
+  try {
+    localStorage.setItem(LAST_SAVED_SERVICE_KEY, JSON.stringify({
+      recordedAt: Date.now(),
+      result: result
+    }));
+  } catch (error) { console.warn('Could not persist saved confirmation:', error); }
+  clearPendingServiceAttempt();
+  lastSavedService = result;
+  showServiceConfirmation(result);
+}
+
+function restoreSavedServiceConfirmation() {
+  if (lastSavedService || pendingServiceSubmission) return false;
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(LAST_SAVED_SERVICE_KEY) || 'null'); }
+  catch (error) { return false; }
+  if (!saved || !saved.result || !saved.result.invoice) return false;
+  const age = Date.now() - Number(saved.recordedAt || 0);
+  if (age < 0 || age > 86400000) {
+    try { localStorage.removeItem(LAST_SAVED_SERVICE_KEY); } catch (error) {}
+    return false;
+  }
+  lastSavedService = saved.result;
+  showServiceConfirmation(saved.result);
+  return true;
+}
+
+function beginServiceSubmit(attempt) {
+  if (serviceSaveInProgress) return;
+  if (!attempt || !attempt.submissionId || !attempt.payload) return;
+  serviceSaveInProgress = true;
+  const button = document.getElementById('completeButton');
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'SAVING...';
+  }
+  const panel = document.getElementById('saveRecoveryPanel');
+  if (panel) panel.style.display = 'none';
+  document.getElementById('payload').value = JSON.stringify(attempt.payload);
+  setStatus('Saving service (request ' + attempt.submissionId.slice(-8) + ')...');
+  // Timeout only changes the UI: it NEVER submits a new request.
+  serviceSaveTimeout = setTimeout(function() {
+    if (!serviceSaveInProgress || !pendingServiceSubmission ||
+        pendingServiceSubmission.submissionId !== attempt.submissionId) return;
+    serviceSaveInProgress = false;
+    showSaveRecoveryPanel('The save confirmation is delayed. The original request may still be processing. Check its status; do not start a new invoice.');
+  }, 45000);
+  document.getElementById('serviceForm').submit();
+}
+
+function checkPendingServiceStatus() {
+  if (!pendingServiceSubmission) {
+    setStatus('No unresolved submission.', true);
+    return;
+  }
+  const id = pendingServiceSubmission.submissionId;
+  setStatus('Checking whether this request already created an invoice...');
+  appsScriptBridgeRequest('submissionstatus', {submissionId: id}, function(response) {
+    if (!pendingServiceSubmission || pendingServiceSubmission.submissionId !== id) return;
+    if (response && response.success && response.found && response.result) {
+      finishServiceSave(response.result);
+      return;
+    }
+    if (response && response.pending) {
+      showSaveRecoveryPanel('Apps Script is still processing or busy. No new invoice has been requested. Check again shortly.');
+      return;
+    }
+    showSaveRecoveryPanel(response && response.success && !response.found
+      ? 'No saved invoice was found for this ID yet. If the original request is still finishing, its result will be reused. You may retry SAME REQUEST safely.'
+      : (response && response.error || 'Status check failed. Do not start another invoice.'));
+  }, function(message) {
+    showSaveRecoveryPanel(message + ' Try CHECK SAVE STATUS again when connected.');
+  });
+}
+
+function retryPendingServiceSubmission() {
+  if (!pendingServiceSubmission || serviceSaveInProgress) return;
+  if (!window.confirm('Retry the SAME service request? The original ID will be reused, so it will not create a second invoice.')) return;
+  beginServiceSubmit(pendingServiceSubmission);
+}
+
+function restorePendingServiceSubmission() {
+  if (pendingServiceSubmission || lastSavedService) return;
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(SERVICE_SAVE_STORAGE_KEY) || 'null'); }
+  catch (error) { saved = null; }
+  if (!saved || !saved.submissionId || !saved.payload) return;
+  pendingServiceSubmission = saved;
+  showSaveRecoveryPanel('A previous save has an unresolved confirmation. Check its status before submitting any other vehicle.');
+  checkPendingServiceStatus(); // read-only; never submits an invoice
+}
+
 
 let lastSavedInvoicePdfFile = null;
 let lastSavedInvoicePdfUrl = "";
@@ -2267,49 +2444,23 @@ window.addEventListener(
     }
 
 
-    if (!serviceSaveInProgress) {
-      return;
+    if (!pendingServiceSubmission ||
+        data.submissionId !== pendingServiceSubmission.submissionId) {
+      return; // stale or unrelated iframe response
     }
-
 
     serviceSaveInProgress = false;
+    if (serviceSaveTimeout) clearTimeout(serviceSaveTimeout);
+    serviceSaveTimeout = null;
 
-
-    const button =
-      document.getElementById(
-        "completeButton"
-      );
-
-
-    button.textContent =
-      "COMPLETE OIL CHANGE";
-
-
-    if (
-      data.success !== true ||
-      !data.result
-    ) {
-
-      updateCompleteButton();
-
-      setStatus(
-        data.error ||
-        "Service could not be saved.",
-        true
-      );
-
+    if (data.success !== true || !data.result) {
+      // A server error is NOT proof that nothing was saved.
+      // Preserve the same ID and force status check/retry, never a fresh invoice.
+      showSaveRecoveryPanel(data.error || 'Save result uncertain. Check status.');
       return;
-
     }
 
-
-    lastSavedService =
-      data.result;
-
-
-    showServiceConfirmation(
-      lastSavedService
-    );
+    finishServiceSave(data.result);
 
   }
 );
@@ -2454,6 +2605,13 @@ function showServiceConfirmation(
 
 
 function resetForNextVehicle() {
+
+  if (pendingServiceSubmission || serviceSaveInProgress) {
+    showSaveRecoveryPanel('Resolve the previous service submission before starting another vehicle.');
+    return;
+  }
+  // Intentionally start a new service: clear the prior completed marker.
+  try { localStorage.removeItem(LAST_SAVED_SERVICE_KEY); } catch (error) {}
 
   lastSavedInvoicePdfFile =
     null;
@@ -4074,6 +4232,9 @@ function updateCompleteButton() {
   document.getElementById(
     "completeButton"
   ).disabled =
+    !!pendingServiceSubmission ||
+    serviceSaveInProgress ||
+    !!lastSavedService ||
     !vehicleData ||
     !validPlate ||
     !unitNumber ||
@@ -4090,6 +4251,11 @@ function updateCompleteButton() {
  */
 
 function completeService() {
+
+  if (serviceSaveInProgress || pendingServiceSubmission || lastSavedService) {
+    setStatus('This service was already submitted or is awaiting verification. Check SAVE STATUS instead of submitting again.', true);
+    return;
+  }
 
   if (!vehicleData) {
 
@@ -4256,28 +4422,31 @@ vin:
   };
 
 
-  document.getElementById(
-    "payload"
-  ).value =
-    JSON.stringify(
-      payload
-    );
+  let submissionId;
+  try { submissionId = createServiceSubmissionId(); }
+  catch (error) {
+    button.disabled = false;
+    button.textContent = 'COMPLETE OIL CHANGE';
+    setStatus(error.message || String(error), true);
+    return;
+  }
 
-
+  payload.submissionId = submissionId;
+  const attempt = {
+    submissionId: submissionId,
+    payload: payload,
+    createdAt: new Date().toISOString()
+  };
+  // Persist before the network request, so Back/reload can recover it.
+  try { savePendingServiceAttempt(attempt); }
+  catch (error) {
+    button.disabled = false;
+    button.textContent = 'COMPLETE OIL CHANGE';
+    setStatus(error.message || String(error), true);
+    return;
+  }
   stopScanner(false);
-
-
-  serviceSaveInProgress = true;
-
-
-  setStatus(
-    "Saving service..."
-  );
-
-
-  document.getElementById(
-    "serviceForm"
-  ).submit();
+  beginServiceSubmit(attempt);
 
 }
 
