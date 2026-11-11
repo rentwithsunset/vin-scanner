@@ -1371,23 +1371,41 @@ function openInvoicePdfFromBrowser(
         }
 
 
-        const pdfBlob =
-          new Blob(
-            [bytes],
-            {
-              type:
-                "application/pdf"
-            }
-          );
+        const safePdfName =
+          String(response.fileName || (invoiceNumber + ".pdf"))
+            .replace(/[\\/:*?"<>|]/g, "_")
+            .replace(/\.pdf$/i, "") + ".pdf";
 
+        const pdfFile = new File(
+          [bytes], safePdfName, {type:"application/pdf"}
+        );
 
-        const pdfUrl =
-          URL.createObjectURL(
-            pdfBlob
-          );
+        const pdfUrl = URL.createObjectURL(pdfFile);
 
 
         cleanup();
+
+        // A blob: PDF preview may still be labeled unknown.pdf by iOS.
+        // Save/Share mode supplies an actual named File to the iOS share sheet.
+        const pdfOptions = new URLSearchParams(window.location.search);
+        if (pdfOptions.get("savepdf") === "1") {
+          document.body.innerHTML = `<main style="font-family:Arial,sans-serif;max-width:420px;margin:48px auto;padding:22px;text-align:center;color:#182238;background:#fff;border-radius:14px">
+            <h2 style="margin:0 0 12px">${safePdfName}</h2>
+            <p>Share or save the named PDF file.</p>
+            <button id="shareNamedPdf" style="background:#0f172a;color:white;border:0;border-radius:8px;padding:14px 20px;font-size:16px;font-weight:bold;width:100%;margin-bottom:12px">SHARE / SAVE PDF</button>
+            <a id="downloadNamedPdf" download="${safePdfName}" href="${pdfUrl}" style="display:block;padding:13px;background:#e2e8f0;border-radius:8px;color:#0f172a;font-weight:bold;text-decoration:none;margin-bottom:12px">DOWNLOAD PDF</a>
+            <a href="${pdfUrl}" style="display:block;color:#0f172a">VIEW PDF</a>
+          </main>`;
+          document.body.style.background = "#f3f5f8";
+          document.getElementById("shareNamedPdf").onclick = async function() {
+            if (navigator.share && (!navigator.canShare || navigator.canShare({files:[pdfFile]}))) {
+              try { await navigator.share({files:[pdfFile], title:safePdfName}); return; }
+              catch(e) {if(e && e.name === "AbortError")return;}
+            }
+            document.getElementById("downloadNamedPdf").click();
+          };
+          return;
+        }
 
 
         if (autoPrint) {
