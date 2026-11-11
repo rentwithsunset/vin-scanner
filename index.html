@@ -298,6 +298,35 @@
     .warning {
       color: #b45309;
     }
+
+    .duplicate-mileage-warning {
+      margin: 10px 0 18px;
+      padding: 14px;
+      border: 2px solid #d97706;
+      border-radius: 10px;
+      background: #fffbeb;
+      color: #92400e;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .duplicate-mileage-warning strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .duplicate-mileage-actions button {
+      margin-top: 10px;
+      padding: 9px 12px;
+      border: 1px solid #d97706;
+      border-radius: 7px;
+      background: #fff;
+      color: #92400e;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
   
     .access-lock {
       position: fixed;
@@ -959,6 +988,23 @@
       placeholder="Enter current mileage"
       oninput="mileageChanged()"
     >
+
+
+    <div
+      id="duplicateMileageWarning"
+      class="duplicate-mileage-warning"
+      role="alert"
+      aria-live="assertive"
+      style="display:none"
+    >
+      <strong>POSSIBLE DUPLICATE SERVICE</strong>
+      <div id="duplicateMileageWarningDetails"></div>
+      <div class="duplicate-mileage-actions">
+        <button type="button" onclick="viewHistory()">
+          CHECK VEHICLE HISTORY
+        </button>
+      </div>
+    </div>
 
 
     <label for="notes">
@@ -2050,6 +2096,52 @@ function preloadSavedInvoicePdf(
 }
 
 
+
+/*
+ * Record the time the user tapped VIEW / PRINT INVOICE.
+ * This is NOT proof that the iOS Print action completed.
+ * Non-blocking JSONP keeps the system Share sheet gesture intact.
+ */
+function recordInvoicePrintShareRequest(invoiceNumber) {
+  const callback =
+    "__printRequest_" + Date.now() + "_" +
+    Math.random().toString(36).slice(2);
+  const script = document.createElement("script");
+  let timeoutId;
+
+  function cleanup() {
+    clearTimeout(timeoutId);
+    try { delete window[callback]; }
+    catch (error) { window[callback] = undefined; }
+    script.remove();
+  }
+
+  window[callback] = function(result) {
+    if (!result || result.success !== true) {
+      console.warn("Print/Share timestamp was not saved:",
+        result && result.error ? result.error : "Unknown error");
+    }
+    cleanup();
+  };
+
+  script.onerror = function() {
+    console.warn("Could not record invoice Print/Share request.");
+    cleanup();
+  };
+
+  timeoutId = setTimeout(function() {
+    console.warn("Print/Share request tracking timed out.");
+    cleanup();
+  }, 15000);
+
+  script.src = API_URL +
+    "?action=invoiceprintrequest&invoice=" +
+    encodeURIComponent(invoiceNumber) +
+    "&callback=" + encodeURIComponent(callback) +
+    "&_=" + Date.now();
+  document.head.appendChild(script);
+}
+
 async function shareSavedInvoicePdf(
   event
 ) {
@@ -2071,6 +2163,10 @@ async function shareSavedInvoicePdf(
   if (!invoiceNumber) {
     return;
   }
+
+
+  // Record the request without delaying the native iOS share action.
+  recordInvoicePrintShareRequest(invoiceNumber);
 
 
   /*
@@ -3198,7 +3294,7 @@ function loadExistingVehicle(vehicle) {
   ).focus();
 
 
-  updateCompleteButton();
+  mileageChanged();
 
 }
 
@@ -3811,22 +3907,9 @@ function unitNumberChanged() {
  * ============================================================
  */
 
-function mileageChanged() {
+function matchesLastServiceMileage(mileage) {
 
-  const mileage =
-    Number(
-      document.getElementById(
-        "mileage"
-      ).value
-    );
-
-
-  /*
-   * Warn if mileage is below the previous
-   * recorded mileage, but do not hard block.
-   */
-
-  if (
+  return !!(
     vehicleData &&
     existingVehicle &&
     vehicleData.lastMileage !== null &&
@@ -3834,10 +3917,82 @@ function mileageChanged() {
     vehicleData.lastMileage !== "" &&
     Number.isFinite(mileage) &&
     mileage > 0 &&
-    mileage <
-      Number(
-        vehicleData.lastMileage
-      )
+    mileage === Number(vehicleData.lastMileage)
+  );
+
+}
+
+
+function updateDuplicateMileageWarning(mileage) {
+
+  const warning =
+    document.getElementById("duplicateMileageWarning");
+
+  const detail =
+    document.getElementById("duplicateMileageWarningDetails");
+
+  if (!warning || !detail) {
+    return;
+  }
+
+  const isDuplicateMileage =
+    matchesLastServiceMileage(mileage);
+
+  warning.style.display =
+    isDuplicateMileage ? "block" : "none";
+
+  if (isDuplicateMileage) {
+
+    const lastDate =
+      vehicleData.lastService
+        ? " on " + vehicleData.lastService
+        : "";
+
+    detail.textContent =
+      "This matches the vehicle's last recorded mileage (" +
+      Number(vehicleData.lastMileage).toLocaleString() +
+      " miles" + lastDate +
+      "). The car may already have received an oil change. " +
+      "Check its history before saving another invoice.";
+
+  }
+
+}
+
+
+function mileageChanged() {
+
+  const mileage =
+    Number(
+      document.getElementById("mileage").value
+    );
+
+  updateDuplicateMileageWarning(mileage);
+
+  if (matchesLastServiceMileage(mileage)) {
+
+    setStatus(
+      "POSSIBLE DUPLICATE: mileage matches the last service. Check history before saving.",
+      false,
+      false,
+      true
+    );
+
+  }
+
+  /*
+   * Lower mileage is also suspicious, but does not block
+   * the service from being saved.
+   */
+  else if (
+    vehicleData &&
+    existingVehicle &&
+    vehicleData.lastMileage !== null &&
+    vehicleData.lastMileage !== undefined &&
+    vehicleData.lastMileage !== "" &&
+    Number.isFinite(mileage) &&
+    mileage > 0 &&
+    mileage < Number(vehicleData.lastMileage)
   ) {
 
     setStatus(
@@ -3849,19 +4004,11 @@ function mileageChanged() {
 
   }
 
-  else if (
-    vehicleData &&
-    existingVehicle
-  ) {
+  else if (vehicleData && existingVehicle) {
 
-    setStatus(
-      "Vehicle found in database",
-      false,
-      true
-    );
+    setStatus("Vehicle found in database", false, true);
 
   }
-
 
   updateCompleteButton();
 
@@ -4032,6 +4179,34 @@ function completeService() {
     );
 
     return;
+
+  }
+
+
+  /*
+   * Require a separate, explicit confirmation when the
+   * entered mileage is identical to the last saved reading.
+   * This also runs if the operator ignores the inline warning.
+   */
+  if (matchesLastServiceMileage(mileage)) {
+
+    const lastDate =
+      vehicleData.lastService
+        ? "\nLast recorded service: " + vehicleData.lastService
+        : "";
+
+    const message =
+      "POSSIBLE DUPLICATE OIL CHANGE\n\n" +
+      "This vehicle already has a recorded service at " +
+      Number(vehicleData.lastMileage).toLocaleString() +
+      " miles." + lastDate +
+      "\n\nCheck the vehicle history before continuing." +
+      "\n\nPress CANCEL to review it, or OK only if " +
+      "you have confirmed this is a separate oil change.";
+
+    if (!window.confirm(message)) {
+      return;
+    }
 
   }
 
@@ -4209,6 +4384,8 @@ function resetVehicleResult() {
   ).value =
     "";
 
+
+  updateDuplicateMileageWarning(NaN);
 
   updateCompleteButton();
 
