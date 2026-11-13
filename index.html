@@ -1038,7 +1038,7 @@
       <label class="service-choice" for="serviceTire">
         <input type="checkbox" id="serviceTire" onchange="serviceSelectionChanged()">
         <span class="service-choice-label"><strong>Flat Tire Repair</strong></span>
-        <strong class="service-choice-price">$25.00</strong>
+        <strong class="service-choice-price">$30.00</strong>
       </label>
       <div class="service-total"><strong>Service Total</strong><strong id="selectedServiceTotal">$65.00</strong></div>
     </div>
@@ -4198,7 +4198,7 @@ function selectedServiceCodes() {
 
 function serviceSelectionChanged() {
   const items=selectedServiceCodes();
-  const amount=(items.includes('oil') ? 65 : 0) + (items.includes('tire') ? 25 : 0);
+  const amount=(items.includes('oil') ? 65 : 0) + (items.includes('tire') ? 30 : 0);
   document.getElementById('selectedServiceTotal').textContent='$'+amount.toFixed(2);
   updateDuplicateMileageWarning(Number(document.getElementById('mileage').value));
   updateCompleteButton();
