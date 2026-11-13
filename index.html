@@ -503,6 +503,16 @@
     cursor: pointer;
   }
 
+
+    .service-selector{border:1px solid #cbd5e1;border-radius:12px;padding:13px;background:#fff;margin:16px 0}
+    .service-selector-title{font-size:12px;font-weight:800;color:#475569;margin-bottom:10px;letter-spacing:.35px}
+    .service-choice{display:flex;align-items:center;gap:11px;padding:12px 5px;border-bottom:1px solid #e2e8f0;cursor:pointer}
+    .service-choice input{width:21px;height:21px;flex:0 0 21px;accent-color:#166534}
+    .service-choice-label{flex:1;min-width:0;font-size:14px;line-height:1.4}
+    .service-choice-label small{display:block;font-size:12px;color:#64748b;margin-top:3px}
+    .service-choice-price{white-space:nowrap;font-size:14px}
+    .service-total{display:flex;justify-content:space-between;align-items:center;padding:14px 5px 3px;font-size:17px}
+
 </style>
 </head>
 
@@ -1018,22 +1028,19 @@
     ></textarea>
 
 
-    <div class="price-box">
-
-      <div>
-        <strong>
-          Oil & Filter Change — 5W-30 Synthetic Blend, Up to 5 Qts + 7-Point Inspection
-        </strong>
-
-        <div class="small">
-          Contract service price
-        </div>
-      </div>
-
-      <div class="price">
-        $65.00
-      </div>
-
+    <div class="service-selector" aria-label="Services performed">
+      <div class="service-selector-title">SERVICES PERFORMED</div>
+      <label class="service-choice" for="serviceOil">
+        <input type="checkbox" id="serviceOil" checked onchange="serviceSelectionChanged()">
+        <span class="service-choice-label"><strong>Oil &amp; Filter Change</strong><small>5W-30 Synthetic Blend, Up to 5 Qts + 7-Point Inspection</small></span>
+        <strong class="service-choice-price">$65.00</strong>
+      </label>
+      <label class="service-choice" for="serviceTire">
+        <input type="checkbox" id="serviceTire" onchange="serviceSelectionChanged()">
+        <span class="service-choice-label"><strong>Flat Tire Repair</strong></span>
+        <strong class="service-choice-price">$25.00</strong>
+      </label>
+      <div class="service-total"><strong>Service Total</strong><strong id="selectedServiceTotal">$65.00</strong></div>
     </div>
 
 
@@ -2669,6 +2676,9 @@ function resetForNextVehicle() {
     "payload"
   ).value = "";
 
+  document.getElementById('serviceOil').checked = true;
+  document.getElementById('serviceTire').checked = false;
+  serviceSelectionChanged();
 
   resetVehicleResult();
 
@@ -4094,7 +4104,7 @@ function updateDuplicateMileageWarning(mileage) {
   }
 
   const isDuplicateMileage =
-    matchesLastServiceMileage(mileage);
+    selectedServiceCodes().includes('oil') && matchesLastServiceMileage(mileage);
 
   warning.style.display =
     isDuplicateMileage ? "block" : "none";
@@ -4127,7 +4137,7 @@ function mileageChanged() {
 
   updateDuplicateMileageWarning(mileage);
 
-  if (matchesLastServiceMileage(mileage)) {
+  if (selectedServiceCodes().includes("oil") && matchesLastServiceMileage(mileage)) {
 
     setStatus(
       "POSSIBLE DUPLICATE: mileage matches the last service. Check history before saving.",
@@ -4179,7 +4189,32 @@ function mileageChanged() {
  * ============================================================
  */
 
+function selectedServiceCodes() {
+  const items = [];
+  if (document.getElementById('serviceOil').checked) items.push('oil');
+  if (document.getElementById('serviceTire').checked) items.push('tire');
+  return items;
+}
+
+function serviceSelectionChanged() {
+  const items=selectedServiceCodes();
+  const amount=(items.includes('oil') ? 65 : 0) + (items.includes('tire') ? 25 : 0);
+  document.getElementById('selectedServiceTotal').textContent='$'+amount.toFixed(2);
+  updateDuplicateMileageWarning(Number(document.getElementById('mileage').value));
+  updateCompleteButton();
+}
+
+function serviceCompleteLabel() {
+  const s=selectedServiceCodes();
+  if (s.length===1 && s[0]==='oil') return 'COMPLETE OIL CHANGE';
+  if (s.length===1 && s[0]==='tire') return 'COMPLETE FLAT TIRE REPAIR';
+  return 'COMPLETE SERVICES';
+}
+
 function updateCompleteButton() {
+
+  const button = document.getElementById('completeButton');
+  if (button && !serviceSaveInProgress && !pendingServiceSubmission && !lastSavedService) button.textContent = serviceCompleteLabel();
 
   const unitNumber =
     document.getElementById(
@@ -4236,6 +4271,7 @@ function updateCompleteButton() {
     serviceSaveInProgress ||
     !!lastSavedService ||
     !vehicleData ||
+    selectedServiceCodes().length === 0 ||
     !validPlate ||
     !unitNumber ||
     !Number.isFinite(mileage) ||
@@ -4349,12 +4385,17 @@ function completeService() {
   }
 
 
+  if (!selectedServiceCodes().length) {
+    setStatus('Select at least one service.', true);
+    return;
+  }
+
   /*
    * Require a separate, explicit confirmation when the
    * entered mileage is identical to the last saved reading.
    * This also runs if the operator ignores the inline warning.
    */
-  if (matchesLastServiceMileage(mileage)) {
+  if (selectedServiceCodes().includes("oil") && matchesLastServiceMileage(mileage)) {
 
     const lastDate =
       vehicleData.lastService
@@ -4414,6 +4455,8 @@ vin:
     mileage:
       mileage,
 
+    selectedServices: selectedServiceCodes(),
+
     notes:
       document.getElementById(
         "notes"
@@ -4426,7 +4469,7 @@ vin:
   try { submissionId = createServiceSubmissionId(); }
   catch (error) {
     button.disabled = false;
-    button.textContent = 'COMPLETE OIL CHANGE';
+    button.textContent = serviceCompleteLabel();
     setStatus(error.message || String(error), true);
     return;
   }
@@ -4441,7 +4484,7 @@ vin:
   try { savePendingServiceAttempt(attempt); }
   catch (error) {
     button.disabled = false;
-    button.textContent = 'COMPLETE OIL CHANGE';
+    button.textContent = serviceCompleteLabel();
     setStatus(error.message || String(error), true);
     return;
   }
